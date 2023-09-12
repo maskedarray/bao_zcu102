@@ -1,0 +1,12 @@
+bin/*
+build/*
+*.o
+*.elf
+*.bin
+*.d
+
+configs/*
+!configs/configs.mk
+!configs/linker.ld 
+!configs/example/
+
