@@ -17,7 +17,7 @@
 #include "sysregs.h"
 #include <plat.h>
 
-#define STACK_SIZE  0x4000
+#define STACK_SIZE  0x300000
 #define GICV3 (3)
 
 #define GENERIC_TIMER_CNTCTL_CNTCR_EN   (0x1)
@@ -142,7 +142,7 @@ _enter_el1:
 	isb
 #endif
 
-    cbnz x0, 1f
+    cbnz x0, secondary_cpus
 
     ldr x16, =__bss_start 
     ldr x17, =__bss_end   
@@ -170,6 +170,7 @@ wait_flag:
     ldr x2, =STACK_SIZE
     add x1, x1, x2
 #ifndef SINGLE_CORE
+    madddd lasdlfhal;
     madd x1, x0, x2, x1
 #endif
     mov sp, x1
@@ -178,6 +179,9 @@ wait_flag:
 
     b _init
     b _exit
+
+secondary_cpus:
+    b secondary_cpus
 
 .global psci_wake_up
 psci_wake_up:

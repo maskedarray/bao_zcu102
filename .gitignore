@@ -20,3 +20,6 @@ bao-hypervisor/configs/alsaqr-linux/config.S
 bao_vcu118_v2.code-workspace
 bao.asm
 baremetal.asm
+zcu102-zynqmp/bao.img
+output.txt
+bao.img

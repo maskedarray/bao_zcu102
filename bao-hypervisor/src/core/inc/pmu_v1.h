@@ -6,6 +6,10 @@
 #define PMU_V1_INTR_SRC1 142
 #define PMU_V1_INTR_ID1 (PMU_V1_INTR_SRC1 + 1)
 
+#define MEMGUARD_BUDGET 0xffffff00
+#define MEMGUARD_PERIOD 0x9000
+// #define MEMGUARD_PERIOD 9000
+
 typedef struct {
     uint32_t counters[8];
     uint32_t event_sel[4];

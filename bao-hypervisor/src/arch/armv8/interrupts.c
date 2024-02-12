@@ -31,7 +31,11 @@ void interrupts_arch_ipi_send(cpuid_t target_cpu, irqid_t ipi_id)
 void interrupts_arch_enable(irqid_t int_id, bool en)
 {
     gic_set_enable(int_id, en);
-    gic_set_prio(int_id, 0x01);
+    if (int_id == 175){
+        gic_set_prio(int_id, 0x02);
+        // printk("lower priority for timer set");
+    } else 
+        gic_set_prio(int_id, 0x01);
     if (GIC_VERSION == GICV2) {
         gicd_set_trgt(int_id, 1 << cpu()->id);
     } else {

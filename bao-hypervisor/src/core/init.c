@@ -29,7 +29,7 @@ void init(cpuid_t cpu_id, paddr_t load_addr)
     
     if (cpu()->id == CPU_MASTER) {
         printk("Bao Hypervisor\n\r");
-        pmu_v1_run();
+        
     }
 
     interrupts_init();

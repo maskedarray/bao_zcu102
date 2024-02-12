@@ -64,12 +64,6 @@ void write_64b_regs(uint32_t num_regs, uint64_t base_addr, uint64_t val[]) {
 
 void pmu_v1_init(){
 
-}
-
-void pmu_v1_run(){
-
-    printk("Hello PMU!\n");
-
     uint64_t pmcr;
     asm volatile("MRS %0, PMCR_EL0" : "=r"(pmcr));
 
@@ -81,13 +75,13 @@ void pmu_v1_run(){
 
     // Configure PMXEVTYPER to count L1 data cache misses (event code 0x03)
     uint32_t event_type = 0x03;  // Event code for L1 data cache misses
+    // uint32_t event_type = 0x17;  // Event code for L2 Refill
+
     asm volatile("MSR PMEVTYPER0_EL0, %0" :: "r"(event_type));
 
-    uint32_t value = 1;  // Set bit 0 to enable PMCCNTR enabling counter 0
-    asm volatile("MSR PMCNTENSET_EL0, %0" :: "r"(value));
-
     //Set initial budget of counter 0
-    value = 0xfffffff0;
+    uint32_t value;
+    value = MEMGUARD_BUDGET;
     asm volatile("MSR PMEVCNTR0_EL0, %0" :: "r"(value));
 
     //enable overflow interrupt
@@ -95,12 +89,37 @@ void pmu_v1_run(){
     asm volatile("MSR PMINTENSET_EL1, %0" :: "r"(value));
 
 
+    // volatile uint32_t comp_array[100] = {0};
+    // for (uint32_t i=0; i<100; i++) {
+    //     comp_array[i] = comp_array[i] + i;
+    // }
+    // printk("Array traversed!\n");
+    // asm volatile("MRS %0, PMCCNTR_EL0" : "=r"(pmcr));
+    // printk("value after array: %x\n", pmcr);
+    
+
+}
+
+void pmu_v1_run(){
+
+    uint64_t pmcr = MEMGUARD_PERIOD;
+    asm volatile("MSR CNTP_TVAL_EL0, %0" :: "r"(pmcr));
+
+    pmcr = 0x1;
+    asm volatile("MSR CNTP_CTL_EL0, %0" :: "r"(pmcr));
+
+    uint32_t value = 1;  // Set bit 0 to enable PMCCNTR enabling counter 0
+    asm volatile("MSR PMCNTENSET_EL0, %0" :: "r"(value));
+
+
   
-    volatile uint32_t comp_array[100] = {0};
-    for (uint32_t i=0; i<100; i++) {
-        comp_array[i] = comp_array[i] + i;
-    }
-    printk("Array traversed!\n");
+    // volatile uint32_t comp_array[100] = {0};
+    // for (uint32_t i=0; i<100; i++) {
+    //     comp_array[i] = comp_array[i] + i;
+    // }
+    // printk("Array traversed!\n");
+    // asm volatile("MRS %0, PMCCNTR_EL0" : "=r"(pmcr));
+    // printk("value after array: %x\n", pmcr);
 
 }
 
@@ -108,11 +127,21 @@ void pmu_v1_interrupt_handler(){
 
   uint32_t value = 1;  // Clear overflow interrupt flag
 	asm volatile("MSR PMOVSCLR_EL0, %0" :: "r"(value));
-  // reload counter
-  value = 0xfffffff0;
+  // reload counter  -----------------stop the core --------------------------
+  value = MEMGUARD_BUDGET;
   asm volatile("MSR PMEVCNTR0_EL0, %0" :: "r"(value));
 
-  printk("Hyp Interrupt occurred\n");
+  uint64_t init_val, final_val;
+  asm volatile("MRS %0, CNTPCT_EL0" : "=r"(init_val));
+  asm volatile("MRS %0, CNTP_CVAL_EL0" : "=r"(final_val));
+  // printk("Hyp Interrupt occurred %lu, %lu\n", init_val, final_val);
+  while(final_val > init_val){
+    
+    asm volatile("MRS %0, CNTPCT_EL0" : "=r"(init_val));
+    asm volatile("MRS %0, CNTP_CVAL_EL0" : "=r"(final_val));
+    
+    // printk("Hyp Interrupt occurred2 %lu, %lu\n", init_val, final_val);
+    }
     
 }
 

@@ -29,6 +29,9 @@
 
 spinlock_t print_lock = SPINLOCK_INITVAL;
 
+#define MEMGUARD_BUDGET 0xfffffff0
+#define MEMGUARD_PERIOD 0x0fffffff
+
 void uart_rx_handler(){
     printf("cpu%d: %s\n",get_cpuid(), __func__);
     uart_clear_rxirq();
@@ -48,34 +51,52 @@ void timer_handler(){
 void main(void){
 
     static volatile bool master_done = false;
-
+    
     if(cpu_is_master()){
         spin_lock(&print_lock);
         printf("Bao bare-metal test guest\n");
+
         spin_unlock(&print_lock);
 
-        irq_set_handler(UART_IRQ_ID, uart_rx_handler);
-        irq_set_handler(TIMER_IRQ_ID, timer_handler);
-        irq_set_handler(IPI_IRQ_ID, ipi_handler);
+        // irq_set_handler(UART_IRQ_ID, uart_rx_handler);
+        // irq_set_handler(TIMER_IRQ_ID, timer_handler);
+        // irq_set_handler(IPI_IRQ_ID, ipi_handler);
 
         uart_enable_rxirq();
 
-        timer_set(TIMER_INTERVAL);
-        irq_enable(TIMER_IRQ_ID);
-        irq_set_prio(TIMER_IRQ_ID, IRQ_MAX_PRIO);
+        // timer_set(TIMER_INTERVAL);
+        // irq_enable(TIMER_IRQ_ID);
+        // irq_set_prio(TIMER_IRQ_ID, IRQ_MAX_PRIO);
 
         master_done = true;
     }
 
-    irq_enable(UART_IRQ_ID);
-    irq_set_prio(UART_IRQ_ID, IRQ_MAX_PRIO);
-    irq_enable(IPI_IRQ_ID);
-    irq_set_prio(IPI_IRQ_ID, IRQ_MAX_PRIO);
-
+    // irq_enable(UART_IRQ_ID);
+    // irq_set_prio(UART_IRQ_ID, IRQ_MAX_PRIO);
+    // irq_enable(IPI_IRQ_ID);
+    // irq_set_prio(IPI_IRQ_ID, IRQ_MAX_PRIO);
+    
     while(!master_done);
+    
     spin_lock(&print_lock);
     printf("cpu %d up\n", get_cpuid());
     spin_unlock(&print_lock);
+
+    int64_t start = timer_get();
+
+    // while(1){
+        uint64_t data_array[64000];
+        for (int i = 0; i < 64000; i++){
+            data_array[i] = data_array[i] + i;
+        }
+    // }
+    
+    int64_t end = timer_get();
+
+    spin_lock(&print_lock);
+    printf("Time spent by cpu %d is: %ld\n", get_cpuid(), end-start);
+    spin_unlock(&print_lock);
+    
 
     while(1) wfi();
 }

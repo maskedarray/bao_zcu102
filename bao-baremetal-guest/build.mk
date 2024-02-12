@@ -10,7 +10,7 @@ cc=$(CROSS_COMPILE)gcc
 objcopy=$(CROSS_COMPILE)objcopy
 objdump=$(CROSS_COMPILE)objdump
 
-OPT_LEVEL = 2
+OPT_LEVEL = 0
 DEBUG_LEVEL = 3
 
 debug_flags:= -g$(DEBUG_LEVEL) $(arch_debug_flags) $(platform_debug_flags)
@@ -36,7 +36,7 @@ CPPFLAGS+=-DNO_FIRMWARE=y
 endif
 ASFLAGS += $(GENERIC_FLAGS) $(CPPFLAGS) $(ARCH_ASFLAGS) 
 CFLAGS += $(GENERIC_FLAGS) $(CPPFLAGS) $(ARCH_CFLAGS) 
-LDFLAGS += $(GENERIC_FLAGS) $(ARCH_LDFLAGS) -nostartfiles
+LDFLAGS += $(GENERIC_FLAGS) $(ARCH_LDFLAGS) -nostartfiles -Wl,--no-warn-rwx-segment
 
 target:=$(BUILD_DIR)/$(NAME)
 all: $(target).bin

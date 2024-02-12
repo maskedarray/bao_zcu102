@@ -35,6 +35,29 @@ inline void interrupts_clear(irqid_t int_id)
 {
     interrupts_arch_clear(int_id);
 }
+#include <printk.h>
+
+void memguard_timer_intr(){
+    uint64_t pmcr;
+
+    //read L1Dcache refill counter
+
+    // printk("This is an interrupt: !!!!!\n\r");
+
+    pmcr = 0x0;
+    asm volatile("MSR CNTP_CTL_EL0, %0" :: "r"(pmcr));
+
+    pmcr = MEMGUARD_PERIOD;
+    asm volatile("MSR CNTP_TVAL_EL0, %0" :: "r"(pmcr));
+    pmcr = 0x1;
+    asm volatile("MSR CNTP_CTL_EL0, %0" :: "r"(pmcr));
+
+    // asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(pmcr));
+    // printk("value after array: %x\n", pmcr);
+    pmcr = MEMGUARD_BUDGET;
+    asm volatile("MSR PMEVCNTR0_EL0, %0" :: "r"(pmcr));
+
+}
 
 inline void interrupts_init()
 {
@@ -44,6 +67,9 @@ inline void interrupts_init()
         interrupts_reserve(IPI_CPU_MSG, cpu_msg_handler);
         interrupts_reserve(175, pmu_v1_interrupt_handler);
         interrupts_cpu_enable(175, true);
+        interrupts_reserve(30, memguard_timer_intr);
+        interrupts_cpu_enable(30, true);
+        
     }
 
     interrupts_cpu_enable(IPI_CPU_MSG, true);
