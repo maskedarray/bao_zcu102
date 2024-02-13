@@ -2,7 +2,7 @@
 # Copyright (c) Bao Project and Contributors. All rights reserved.
 
 # Prepare enviroment for baremetal-runtime
-NAME:=baremetal
+NAME?=baremetal
 ROOT_DIR:=$(realpath .)
 BUILD_DIR:=$(ROOT_DIR)/build/$(PLATFORM)
 

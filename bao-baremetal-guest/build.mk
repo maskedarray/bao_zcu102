@@ -25,6 +25,9 @@ endif
 ifneq ($(MEM_BASE),)
 CPPFLAGS+=-DMEM_BASE=$(MEM_BASE)
 endif
+ifneq ($(NONCUA),)
+CPPFLAGS+=-DNONCUA
+endif
 ifneq ($(MEM_SIZE),)
 CPPFLAGS+=-DMEM_SIZE=$(MEM_SIZE)
 endif
@@ -75,6 +78,9 @@ $(objs) $(deps): | $$(@D)/
 
 $(dirs):
 	mkdir -p $@
+
+clean-min:
+	@rm -rf $(BUILD_DIR)/src
 
 clean:
 	@rm -rf $(BUILD_DIR)

@@ -179,8 +179,6 @@ wait_flag:
     b _init
     b _exit
 
-secondary_cpus:
-    b secondary_cpus
 
 .global psci_wake_up
 psci_wake_up:

@@ -145,6 +145,7 @@ void vmm_init()
         cpu_sync_barrier(&vm->sync);
         vcpu_run(cpu()->vcpu);
     } else {
+        printk("This cpu is not allocated vm %d\n", cpu()->id);
         cpu_idle();
     }
 }

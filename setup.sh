@@ -15,7 +15,15 @@ alias supersetup='source setup.sh > /dev/null; cd zcu102-zynqmp/; xsct xsct_scri
 cd bao-baremetal-guest
 # make1
 make clean
-make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 NAME=baremetal1 
+cp build/zcu102/baremetal1.bin ./../
+cp build/zcu102/baremetal1.elf ./../
+cp build/zcu102/baremetal1.asm ./../
+make clean
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal2 MEM_BASE=0x30000000 NONCUA=y
+cp build/zcu102/baremetal2.bin ./../
+cp build/zcu102/baremetal2.elf ./../
+cp build/zcu102/baremetal2.asm ./../
 
 
 export CONFIG=baremetal

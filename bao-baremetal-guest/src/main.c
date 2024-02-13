@@ -51,6 +51,11 @@ void timer_handler(){
 void main(void){
 
     static volatile bool master_done = false;
+
+    #ifdef NONCUA
+        printf("This is non cua core\n");
+        while(1){}
+    #endif
     
     if(cpu_is_master()){
         spin_lock(&print_lock);

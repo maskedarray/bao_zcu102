@@ -50,7 +50,7 @@ while {1} {
         targets -set -nocase -filter {name =~ "*A53 #0*"}
         dow  "bl31.elf"
         dow -data  bao.img 0x200000
-        con
+        
 
     } errorMsg]} {
         puts "Error: $errorCode - $errorMsg"
