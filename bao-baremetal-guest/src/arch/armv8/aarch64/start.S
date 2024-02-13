@@ -142,7 +142,7 @@ _enter_el1:
 	isb
 #endif
 
-    cbnz x0, secondary_cpus
+    cbnz x0, 1f
 
     ldr x16, =__bss_start 
     ldr x17, =__bss_end   
@@ -170,7 +170,6 @@ wait_flag:
     ldr x2, =STACK_SIZE
     add x1, x1, x2
 #ifndef SINGLE_CORE
-    madddd lasdlfhal;
     madd x1, x0, x2, x1
 #endif
     mov sp, x1

@@ -85,9 +85,16 @@ void main(void){
     int64_t start = timer_get();
 
     // while(1){
-        uint64_t data_array[64000];
-        for (int i = 0; i < 64000; i++){
-            data_array[i] = data_array[i] + i;
+        uint64_t data_array[262144];
+        for (int i = 0; i < 262144; i++){
+            asm volatile (
+                "ldr %[value], [%[array], %[index], LSL #3]\n"   // Load data_array[i] into x1
+                "add %[value], %[value], %[index]\n"              // Add i to x1
+                "str %[value], [%[array], %[index], LSL #3]\n"   // Store the result back to data_array[i]
+                : [value] "+r" (data_array[i])
+                : [array] "r" (data_array), [index] "r" (i)
+                : // No clobbered registers
+            );
         }
     // }
     
