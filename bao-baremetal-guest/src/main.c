@@ -53,9 +53,26 @@ void main(void){
     static volatile bool master_done = false;
 
     #ifdef NONCUA
-        printf("This is non cua core\n");
+        #ifdef NONCUA_PRINT
+            printf("This is non cua core\n");
+        #endif
+        while(1){
+            uint64_t data_array[262144];
+            asm volatile ("interfering_cores:");
+            for (int i = 0; i < 262144; i=i+8){
+                asm volatile (
+
+                    "str %[value], [%[array], %[index], LSL #3]\n"   // Store the result back to data_array[i]
+                    : [value] "+r" (data_array[i])
+                    : [array] "r" (data_array), [index] "r" (i)
+                    : // No clobbered registers
+                );
+            }
+        }
         while(1){}
-    #endif
+
+    #else
+    
     
     if(cpu_is_master()){
         spin_lock(&print_lock);
@@ -87,28 +104,41 @@ void main(void){
     printf("cpu %d up\n", get_cpuid());
     spin_unlock(&print_lock);
 
+    uint64_t data_array[262144];
+
+    for (int i = 0; i < 262144; i=i+8){
+        asm volatile (
+            "ldr %[value], [%[array], %[index], LSL #3]\n"   // Load data_array[i] into x1
+            "add %[value], %[value], %[index]\n"              // Add i to x1
+            "str %[value], [%[array], %[index], LSL #3]\n"   // Store the result back to data_array[i]
+            : [value] "+r" (data_array[i])
+            : [array] "r" (data_array), [index] "r" (i)
+            : // No clobbered registers
+        );
+    }
+
     int64_t start = timer_get();
 
-    // while(1){
-        uint64_t data_array[262144];
-        for (int i = 0; i < 262144; i++){
+    for(int repeat=0; repeat <100; ++repeat){
+        asm volatile ("non_interfering_core:");
+        for (int i = 0; i < 262144; i=i+8){
             asm volatile (
-                "ldr %[value], [%[array], %[index], LSL #3]\n"   // Load data_array[i] into x1
-                "add %[value], %[value], %[index]\n"              // Add i to x1
+
                 "str %[value], [%[array], %[index], LSL #3]\n"   // Store the result back to data_array[i]
                 : [value] "+r" (data_array[i])
                 : [array] "r" (data_array), [index] "r" (i)
                 : // No clobbered registers
             );
         }
-    // }
+    }
     
     int64_t end = timer_get();
 
     spin_lock(&print_lock);
-    printf("Time spent by cpu %d is: %ld\n", get_cpuid(), end-start);
+    printf("Time spent by cpu %d is: %ld\n", get_cpuid(), (int)((end-start)/100));
     spin_unlock(&print_lock);
     
 
     while(1) wfi();
+    #endif
 }

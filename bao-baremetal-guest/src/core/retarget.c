@@ -102,7 +102,10 @@ void _init(){
     spin_lock(&init_lock);
     if(!init_done) {
         init_done = true;
-        uart_init();
+        #ifdef NONCUA_PRINT
+            uart_init();
+            printf("initialized uart\n");
+        #endif
     }
     spin_unlock(&init_lock);
     

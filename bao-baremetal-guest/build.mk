@@ -28,6 +28,9 @@ endif
 ifneq ($(NONCUA),)
 CPPFLAGS+=-DNONCUA
 endif
+ifneq ($(NONCUA_PRINT),)
+CPPFLAGS+=-DNONCUA_PRINT
+endif
 ifneq ($(MEM_SIZE),)
 CPPFLAGS+=-DMEM_SIZE=$(MEM_SIZE)
 endif

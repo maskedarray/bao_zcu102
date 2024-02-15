@@ -16,14 +16,24 @@ cd bao-baremetal-guest
 # make1
 make clean
 make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 NAME=baremetal1 
-cp build/zcu102/baremetal1.bin ./../
-cp build/zcu102/baremetal1.elf ./../
-cp build/zcu102/baremetal1.asm ./../
+cp build/zcu102/baremetal1.bin ./../output/
+cp build/zcu102/baremetal1.elf ./../output/
+cp build/zcu102/baremetal1.asm ./../output/
 make clean
-make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal2 MEM_BASE=0x30000000 NONCUA=y
-cp build/zcu102/baremetal2.bin ./../
-cp build/zcu102/baremetal2.elf ./../
-cp build/zcu102/baremetal2.asm ./../
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal2 MEM_BASE=0x30000000 NONCUA=y #NONCUA_PRINT=y
+cp build/zcu102/baremetal2.bin ./../output/
+cp build/zcu102/baremetal2.elf ./../output/
+cp build/zcu102/baremetal2.asm ./../output/
+make clean
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal3 MEM_BASE=0x35000000 NONCUA=y
+cp build/zcu102/baremetal3.bin ./../output/
+cp build/zcu102/baremetal3.elf ./../output/
+cp build/zcu102/baremetal3.asm ./../output/
+make clean
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal4 MEM_BASE=0x3A000000 NONCUA=y
+cp build/zcu102/baremetal4.bin ./../output/
+cp build/zcu102/baremetal4.elf ./../output/
+cp build/zcu102/baremetal4.asm ./../output/
 
 
 export CONFIG=baremetal
@@ -36,6 +46,7 @@ cd ../bao-hypervisor
 # make2
 make clean
 make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 CONFIG=baremetal CONFIG_BUILTIN=y
+cp -r ./bin/zcu102/baremetal/bao.elf ./../
 
 cd ..
 

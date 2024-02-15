@@ -140,8 +140,8 @@ void vmm_init()
         struct vm_allocation *vm_alloc = vmm_alloc_install_vm(vm_id, master);
         struct vm_config *vm_config = &config.vmlist[vm_id];
         struct vm *vm = vm_init(vm_alloc, vm_config, master, vm_id);
-        pmu_v1_init();
-        pmu_v1_run();
+        // pmu_v1_init();
+        // pmu_v1_run();
         cpu_sync_barrier(&vm->sync);
         vcpu_run(cpu()->vcpu);
     } else {
