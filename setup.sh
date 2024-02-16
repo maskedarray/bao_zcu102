@@ -9,28 +9,42 @@ export PATH=/opt/arm/bin:$PATH
 export PLATFORM=zcu102
 
 alias supersetup='source setup.sh > /dev/null; cd zcu102-zynqmp/; xsct xsct_script.tcl; cd .. ; (timeout 10 cat /dev/ttyUSB3 &) ;sleep 1; echo ";bootm start 0x200000; bootm loados; bootm go" > /dev/ttyUSB3; echo "echoed data to uart"'
-
+#flags1=("-DCUA_RD" "-DCUA_WR" "-DCUA_RD" "-DCUA_WR" );flags2=("-DNCUA_RD" "-DNCUA_RD" "-DNCUA_WR" "-DNCUA_WR" );killall cat;(timeout 120 cat /dev/ttyUSB1  &) && for((trial=0;trial<4;trial++)); do EXTRA_FLAGS1=${flags1[trial]}; EXTRA_FLAGS2=${flags2[trial]}; source setup.sh>/dev/null;cd zcu102-zynqmp/; xsct semi_boot_script.tcl; cd ..; sleep 1; echo ";bootm start 0x200000; bootm loados; bootm go" > /dev/ttyUSB1; sleep 3; done
 # alias make1='make clean;make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102'
+
+# Default value for EXTRA_FLAGS
+DEFAULT_EXTRA_FLAGS1="-DCUA_RD"
+
+# Check if EXTRA_FLAGS is provided externally, otherwise use the default value
+if [ -z "$EXTRA_FLAGS1" ]; then
+    EXTRA_FLAGS1=$DEFAULT_EXTRA_FLAGS1
+fi
+DEFAULT_EXTRA_FLAGS2="-DNCUA_RD"
+
+# Check if EXTRA_FLAGS is provided externally, otherwise use the default value
+if [ -z "$EXTRA_FLAGS2" ]; then
+    EXTRA_FLAGS2=$DEFAULT_EXTRA_FLAGS2
+fi
 
 cd bao-baremetal-guest
 # make1
 make clean
-make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 NAME=baremetal1 
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 NAME=baremetal1 EXTRA_FLAGS=$EXTRA_FLAGS1
 cp build/zcu102/baremetal1.bin ./../output/
 cp build/zcu102/baremetal1.elf ./../output/
 cp build/zcu102/baremetal1.asm ./../output/
 make clean
-make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal2 MEM_BASE=0x30000000 NONCUA=y #NONCUA_PRINT=y
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal2 EXTRA_FLAGS=$EXTRA_FLAGS2 MEM_BASE=0x30000000 NONCUA=y #NONCUA_PRINT=y
 cp build/zcu102/baremetal2.bin ./../output/
 cp build/zcu102/baremetal2.elf ./../output/
 cp build/zcu102/baremetal2.asm ./../output/
 make clean
-make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal3 MEM_BASE=0x35000000 NONCUA=y
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal3 MEM_BASE=0x35000000 NONCUA=y EXTRA_FLAGS=$EXTRA_FLAGS2
 cp build/zcu102/baremetal3.bin ./../output/
 cp build/zcu102/baremetal3.elf ./../output/
 cp build/zcu102/baremetal3.asm ./../output/
 make clean
-make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal4 MEM_BASE=0x3A000000 NONCUA=y
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal4 MEM_BASE=0x3A000000 NONCUA=y EXTRA_FLAGS=$EXTRA_FLAGS2
 cp build/zcu102/baremetal4.bin ./../output/
 cp build/zcu102/baremetal4.elf ./../output/
 cp build/zcu102/baremetal4.asm ./../output/

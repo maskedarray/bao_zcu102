@@ -5,6 +5,7 @@
 NAME?=baremetal
 ROOT_DIR:=$(realpath .)
 BUILD_DIR:=$(ROOT_DIR)/build/$(PLATFORM)
+EXTRA_FLAGS?=
 
 # Setup baremetal-runtime build
 include $(ROOT_DIR)/setup.mk

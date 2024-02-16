@@ -28,6 +28,9 @@ endif
 ifneq ($(NONCUA),)
 CPPFLAGS+=-DNONCUA
 endif
+ifneq ($(EXTRA_FLAGS),)
+CPPFLAGS+=$(EXTRA_FLAGS)
+endif
 ifneq ($(NONCUA_PRINT),)
 CPPFLAGS+=-DNONCUA_PRINT
 endif

@@ -60,9 +60,13 @@ void main(void){
             uint64_t data_array[262144];
             asm volatile ("interfering_cores:");
             for (int i = 0; i < 262144; i=i+8){
-                asm volatile (
-
+                asm volatile (""
+                    #ifdef NCUA_RD
+                    "ldr %[value], [%[array], %[index], LSL #3]\n"   // Load data_array[i] into x1
+                    #endif
+                    #ifdef NCUA_WR
                     "str %[value], [%[array], %[index], LSL #3]\n"   // Store the result back to data_array[i]
+                    #endif
                     : [value] "+r" (data_array[i])
                     : [array] "r" (data_array), [index] "r" (i)
                     : // No clobbered registers
@@ -103,40 +107,59 @@ void main(void){
     spin_lock(&print_lock);
     printf("cpu %d up\n", get_cpuid());
     spin_unlock(&print_lock);
+    int eval_array[40] = {16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 5120, 6144, 7168, 8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, 16384, 20480, 24576, 28672, 32768, 36864, 40960, 45056, 49152, 53248, 57344, 61440, 65536, 131072, 262144, 524288, 1048576};
 
     uint64_t data_array[262144];
 
-    for (int i = 0; i < 262144; i=i+8){
-        asm volatile (
-            "ldr %[value], [%[array], %[index], LSL #3]\n"   // Load data_array[i] into x1
-            "add %[value], %[value], %[index]\n"              // Add i to x1
-            "str %[value], [%[array], %[index], LSL #3]\n"   // Store the result back to data_array[i]
-            : [value] "+r" (data_array[i])
-            : [array] "r" (data_array), [index] "r" (i)
-            : // No clobbered registers
-        );
-    }
 
-    int64_t start = timer_get();
-
-    for(int repeat=0; repeat <100; ++repeat){
-        asm volatile ("non_interfering_core:");
-        for (int i = 0; i < 262144; i=i+8){
+    for(int a_len = 1; a_len < 36; a_len++) { 
+        for (int i = 0; i < eval_array[a_len]; i=i+8){
             asm volatile (
-
-                "str %[value], [%[array], %[index], LSL #3]\n"   // Store the result back to data_array[i]
+                    #ifdef CUA_RD
+                    "ldr %[value], [%[array], %[index], LSL #3]\n"   // Load data_array[i] into x1
+                    #endif
+                    #ifdef CUA_WR 
+                    "str %[value], [%[array], %[index], LSL #3]\n"   // Store the result back to data_array[i]
+                    #endif
                 : [value] "+r" (data_array[i])
                 : [array] "r" (data_array), [index] "r" (i)
                 : // No clobbered registers
             );
         }
+
+        int64_t start = timer_get();
+
+        for(int repeat=0; repeat <100; ++repeat){
+            asm volatile ("non_interfering_core:");
+            for (int i = 0; i < eval_array[a_len]; i=i+8){
+                asm volatile (
+                    #ifdef CUA_RD
+                    "ldr %[value], [%[array], %[index], LSL #3]\n"   // Load data_array[i] into x1
+                    #endif
+                    #ifdef CUA_WR 
+                    "str %[value], [%[array], %[index], LSL #3]\n"   // Store the result back to data_array[i]
+                    #endif
+                    : [value] "+r" (data_array[i])
+                    : [array] "r" (data_array), [index] "r" (i)
+                    : // No clobbered registers
+                );
+            }
+        }
+        int64_t end = timer_get();
+
+        spin_lock(&print_lock);
+        #ifdef CUA_RD
+        printf("CUA set to read");
+        #endif
+        #ifdef CUA_WR 
+        printf("CUA set to write");
+        #endif
+        printf("Time spent by cpu %d per read/wr is: %0.1f\n", get_cpuid(), ((float)((end-start)*8)/((float)(100*eval_array[a_len]))));
+        printf("Time spent by cpu %d per iteration is: %ld\n", get_cpuid(), (int)((end-start)/100));
+        spin_unlock(&print_lock);
     }
     
-    int64_t end = timer_get();
-
-    spin_lock(&print_lock);
-    printf("Time spent by cpu %d is: %ld\n", get_cpuid(), (int)((end-start)/100));
-    spin_unlock(&print_lock);
+    
     
 
     while(1) wfi();
