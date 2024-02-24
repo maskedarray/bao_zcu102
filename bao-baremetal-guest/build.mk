@@ -10,7 +10,7 @@ cc=$(CROSS_COMPILE)gcc
 objcopy=$(CROSS_COMPILE)objcopy
 objdump=$(CROSS_COMPILE)objdump
 
-OPT_LEVEL = 2
+OPT_LEVEL = 3
 DEBUG_LEVEL = 3
 
 debug_flags:= -g$(DEBUG_LEVEL) $(arch_debug_flags) $(platform_debug_flags)

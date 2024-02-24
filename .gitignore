@@ -24,4 +24,7 @@ zcu102-zynqmp/bao.img
 output.txt
 bao.img
 *.asm
+results/*
+*.png
 
+output2.txt

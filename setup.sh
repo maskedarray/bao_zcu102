@@ -10,6 +10,10 @@ export PLATFORM=zcu102
 
 alias supersetup='source setup.sh > /dev/null; cd zcu102-zynqmp/; xsct xsct_script.tcl; cd .. ; (timeout 10 cat /dev/ttyUSB3 &) ;sleep 1; echo ";bootm start 0x200000; bootm loados; bootm go" > /dev/ttyUSB3; echo "echoed data to uart"'
 #flags1=("-DCUA_RD" "-DCUA_WR" "-DCUA_RD" "-DCUA_WR" );flags2=("-DNCUA_RD" "-DNCUA_RD" "-DNCUA_WR" "-DNCUA_WR" );killall cat;(timeout 120 cat /dev/ttyUSB1  &) && for((trial=0;trial<4;trial++)); do EXTRA_FLAGS1=${flags1[trial]}; EXTRA_FLAGS2=${flags2[trial]}; source setup.sh>/dev/null;cd zcu102-zynqmp/; xsct semi_boot_script.tcl; cd ..; sleep 1; echo ";bootm start 0x200000; bootm loados; bootm go" > /dev/ttyUSB1; sleep 3; done
+
+#flags1=("-DCUA_RD" "-DCUA_WR" "-DCUA_RD" "-DCUA_WR" );flags2=("-DNCUA_RD" "-DNCUA_RD" "-DNCUA_WR" "-DNCUA_WR" );ps | grep -v -e 'bash' -e 'PID' | awk '{print $1}' | xargs kill -9 ;(timeout 120 stdbuf -oL cat /dev/ttyUSB0  > output.txt &); for((trial=0;trial<4;trial++)); do EXTRA_FLAGS1=${flags1[trial]}; EXTRA_FLAGS2=${flags2[trial]}; source setup.sh>/dev/null;cd zcu102-zynqmp/; xsct semi_boot_script.tcl; cd ..; sleep 1; echo ";bootm start 0x200000; bootm loados; bootm go" > /dev/ttyUSB0; sleep 3; done
+#cat output.txt | grep "per read" | cut -d " " -f5,10 | awk '{print (NR < 32? "RD_RD": (NR < 63? "WR_RD": (NR<94? "RD_WR" : "WR_WR"))), $0}' > output2.txt
+
 # alias make1='make clean;make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102'
 
 # Default value for EXTRA_FLAGS
@@ -29,7 +33,7 @@ fi
 cd bao-baremetal-guest
 # make1
 make clean
-make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 NAME=baremetal1 EXTRA_FLAGS=$EXTRA_FLAGS1
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 NAME=baremetal1 EXTRA_FLAGS="$EXTRA_FLAGS1"
 cp build/zcu102/baremetal1.bin ./../output/
 cp build/zcu102/baremetal1.elf ./../output/
 cp build/zcu102/baremetal1.asm ./../output/
