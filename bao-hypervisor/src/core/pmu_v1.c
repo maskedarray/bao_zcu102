@@ -74,8 +74,8 @@ void pmu_v1_init(){
     asm volatile("MSR PMCR_EL0, %0" :: "r"(pmcr));
 
     // Configure PMXEVTYPER to count L1 data cache misses (event code 0x03)
-    uint32_t event_type = 0x03;  // Event code for L1 data cache misses
-    // uint32_t event_type = 0x17;  // Event code for L2 Refill
+    // uint32_t event_type = 0x03;  // Event code for L1 data cache misses
+    uint32_t event_type = 0x17;  // Event code for L2 Refill
 
     asm volatile("MSR PMEVTYPER0_EL0, %0" :: "r"(event_type));
 
@@ -134,7 +134,7 @@ void pmu_v1_interrupt_handler(){
   uint64_t init_val, final_val;
   asm volatile("MRS %0, CNTPCT_EL0" : "=r"(init_val));
   asm volatile("MRS %0, CNTP_CVAL_EL0" : "=r"(final_val));
-  // printk("Hyp Interrupt occurred %lu, %lu\n", init_val, final_val);
+  // printk("pmu %lu, %lu\n", init_val, final_val);
   while(final_val > init_val){
     
     asm volatile("MRS %0, CNTPCT_EL0" : "=r"(init_val));

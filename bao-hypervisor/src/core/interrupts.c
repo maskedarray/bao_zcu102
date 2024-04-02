@@ -42,7 +42,7 @@ void memguard_timer_intr(){
 
     //read L1Dcache refill counter
 
-    // printk("This is an interrupt: !!!!!\n\r");
+    // printk("This is an interrupt: !!!!! %d\n\r", cpu()->id);
 
     pmcr = 0x0;
     asm volatile("MSR CNTP_CTL_EL0, %0" :: "r"(pmcr));
@@ -66,12 +66,23 @@ inline void interrupts_init()
     if (cpu()->id == CPU_MASTER) {
         interrupts_reserve(IPI_CPU_MSG, cpu_msg_handler);
         interrupts_reserve(175, pmu_v1_interrupt_handler);
-        interrupts_cpu_enable(175, true);
+        interrupts_reserve(176, pmu_v1_interrupt_handler);
+        interrupts_reserve(177, pmu_v1_interrupt_handler);
+        interrupts_reserve(178, pmu_v1_interrupt_handler);
         interrupts_reserve(30, memguard_timer_intr);
-        interrupts_cpu_enable(30, true);
-        
     }
 
+    if(cpu()->id == 0){
+        interrupts_cpu_enable(175, true);
+    } else if (cpu()->id == 1) {
+        interrupts_cpu_enable(176, true);
+    } else if (cpu()->id == 2) {
+        interrupts_cpu_enable(177, true);
+    } else if (cpu()->id == 3) {
+        interrupts_cpu_enable(178, true);
+    }
+
+    interrupts_cpu_enable(30, true);
     interrupts_cpu_enable(IPI_CPU_MSG, true);
 }
 

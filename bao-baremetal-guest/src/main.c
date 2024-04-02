@@ -60,6 +60,9 @@ void main(void){
         #ifdef NONCUA_PRINT
             printf("This is non cua core\n");
         #endif
+        // spin_lock(&print_lock);
+        // printf("cpu %d up\n", get_cpuid());
+        // spin_unlock(&print_lock);
         while(1){
             uint64_t data_array[262144];
             uint64_t data_array_end = (uint64_t)&data_array[262144-1];
@@ -85,17 +88,17 @@ void main(void){
                         : : [array] "r" (data_array), [array_end] "r" (data_array_end)
                         : "cc", "x0", "x1", "x2", "x3" 
                 );
-                asm volatile (""
-                    #ifdef NCUA_RD
-                    "ldr %[value], [%[array], %[index], LSL #3]\n"
-                    #endif
-                    #ifdef NCUA_WR
-                    "str %[value], [%[array], %[index], LSL #3]\n"
-                    #endif
-                    : [value] "+r" (data_array[i])
-                    : [array] "r" (data_array), [index] "r" (i)
-                    : // No clobbered registers
-                );
+                // asm volatile (""
+                //     #ifdef NCUA_RD
+                //     "ldr %[value], [%[array], %[index], LSL #3]\n"
+                //     #endif
+                //     #ifdef NCUA_WR
+                //     "str %[value], [%[array], %[index], LSL #3]\n"
+                //     #endif
+                //     : [value] "+r" (data_array[i])
+                //     : [array] "r" (data_array), [index] "r" (i)
+                //     : // No clobbered registers
+                // );
             }
         }
         while(1){}
@@ -107,7 +110,7 @@ void main(void){
         spin_lock(&print_lock);
         printf("Bao bare-metal test guest\n");
         spin_unlock(&print_lock);
-        uart_enable_rxirq();
+        // uart_enable_rxirq();
         master_done = true;
     }
     while(!master_done);
@@ -162,12 +165,11 @@ void main(void){
         );
         #endif
 
-        
+
 
         int64_t start = timer_get();
-
-        
-        // for(int repeat=0; repeat <10; ++repeat){
+  
+        // for(int repeat=0; repeat <20; ++repeat){
             #ifdef CUA_RD
             asm volatile ("non_interfering_core:\n"
                             "mov x2, #0\n"
@@ -202,12 +204,14 @@ void main(void){
                             : "cc", "x0", "x1", "x2", "x3" 
             );
             #endif
+        // }
+        
         int64_t end = timer_get();
 
         spin_lock(&print_lock);
         //#warning: divisor should be set in shell print
         printf("Time spent for size: %0.0f , per read/wr is: %0.2f\n", (int)(eval_array[a_len]*8.0)/1024.0, ((float)((end-start)*8)/((float)(100*eval_array[a_len]))));
-        // printf("Time spent per iteration for %0.1f KB is: %ld\n",(eval_array[a_len]*8.0)/1024.0), (float)((end-start)/100.0);
+        // printf("Time spent per iteration for size: %0.1f , is: %ld\n",(eval_array[a_len]*8.0)/1024.0), (float)((end-start)/10.0);
         spin_unlock(&print_lock);
     #ifndef ARRAY_SIZE
     }

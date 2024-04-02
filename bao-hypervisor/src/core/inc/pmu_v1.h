@@ -6,8 +6,8 @@
 #define PMU_V1_INTR_SRC1 142
 #define PMU_V1_INTR_ID1 (PMU_V1_INTR_SRC1 + 1)
 
-#define MEMGUARD_BUDGET 4294967291
-#define MEMGUARD_PERIOD 250
+#define MEMGUARD_BUDGET 4294966981
+#define MEMGUARD_PERIOD 500
 
 typedef struct {
     uint32_t counters[8];
