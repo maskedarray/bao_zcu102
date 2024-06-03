@@ -54,7 +54,11 @@ void memguard_timer_intr(){
 
     // asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(pmcr));
     // printk("value after array: %x\n", pmcr);
-    pmcr = MEMGUARD_BUDGET;
+    // pmcr = MEMGUARD_BUDGET;
+    if(cpu()->id == 0){
+        pmcr = MEMGUARD_BUDGET_CUA;
+    } else
+        pmcr = MEMGUARD_BUDGET_NCUA;
     asm volatile("MSR PMEVCNTR0_EL0, %0" :: "r"(pmcr));
 
 }

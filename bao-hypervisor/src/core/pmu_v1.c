@@ -81,7 +81,11 @@ void pmu_v1_init(){
 
     //Set initial budget of counter 0
     uint32_t value;
-    value = MEMGUARD_BUDGET;
+    // value = MEMGUARD_BUDGET;
+    if(cpu()->id == 0){
+      value = MEMGUARD_BUDGET_CUA;
+    } else
+      value = MEMGUARD_BUDGET_NCUA;
     asm volatile("MSR PMEVCNTR0_EL0, %0" :: "r"(value));
 
     //enable overflow interrupt
@@ -128,7 +132,11 @@ void pmu_v1_interrupt_handler(){
   uint32_t value = 1;  // Clear overflow interrupt flag
 	asm volatile("MSR PMOVSCLR_EL0, %0" :: "r"(value));
   // reload counter  -----------------stop the core --------------------------
-  value = MEMGUARD_BUDGET;
+  // value = MEMGUARD_BUDGET;
+  if(cpu()->id == 0){
+    value = MEMGUARD_BUDGET_CUA;
+  } else
+    value = MEMGUARD_BUDGET_NCUA;
   asm volatile("MSR PMEVCNTR0_EL0, %0" :: "r"(value));
 
   uint64_t init_val, final_val;
