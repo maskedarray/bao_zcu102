@@ -123,7 +123,7 @@ void main(void){
     uint64_t data_array[1048576];
     printf("The timer frequency is: %d\n", TIMER_FREQ);
     #ifdef ARRAY_SIZE
-    int a_len = 30;
+    int a_len = 30;     //eval_array[a_len] = 262144
     #else
     for(int a_len = 1; a_len < 32; a_len++) { 
     #endif
@@ -169,7 +169,7 @@ void main(void){
 
         int64_t start = timer_get();
   
-        // for(int repeat=0; repeat <20; ++repeat){
+        for(int repeat=0; repeat <20; ++repeat){
             #ifdef CUA_RD
             asm volatile ("non_interfering_core:\n"
                             "mov x2, #0\n"
@@ -177,7 +177,7 @@ void main(void){
                             "mov x0, %[array]\n"            // Load the base address of the array into register x0
                             "mov x1, %[array_end]\n"        // Load the end address of the array into register x1
                         "loop_start:\n"
-                            "ldr x3, [x0], #64\n"            // Load and increment by 64 bytes
+                            "add x0, x0, #64\n"            // Load and increment by 64 bytes
                             "cmp x0, x1\n"                  // Compare the current address with the end address
                             "b.lt loop_start\n"             // Branch back to the start of the loop if less than
                             "add x2, x2, #1\n"
@@ -204,14 +204,20 @@ void main(void){
                             : "cc", "x0", "x1", "x2", "x3" 
             );
             #endif
-        // }
+        }
         
         int64_t end = timer_get();
-
+        // *12: core clock is 1200mhz and counter clock is 100mhz
+        // /8: eval_array[a_len] is skipped by 8 indices in assembly loop to make jump of 64 byte equal to cache line
+        // divide result by Num_Reps to offset number of repetations
+        // float time_per_rd = ((float)(end-start)*12)/((float)eval_array[a_len]/8);
+        // time_per_rd = time_per_rd/NUM_REPS;
         spin_lock(&print_lock);
         //#warning: divisor should be set in shell print
-        printf("Time spent for size: %0.0f , per read/wr is: %0.2f\n", (int)(eval_array[a_len]*8.0)/1024.0, ((float)((end-start)*8)/((float)(100*eval_array[a_len]))));
+        // printf("Time spent for size: %0.0f , per read/wr @100mhz is: %0.2f\n", (int)(eval_array[a_len]*8.0)/1024.0, ((float)((end-start)*8)/((float)(100*eval_array[a_len]))));
         // printf("Time spent per iteration for size: %0.1f , is: %ld\n",(eval_array[a_len]*8.0)/1024.0), (float)((end-start)/10.0);
+        // This is the total execution time instead of the time per instruction.
+        printf("Time taken %llu\r\n", ((float)(end-start)));
         spin_unlock(&print_lock);
     #ifndef ARRAY_SIZE
     }
