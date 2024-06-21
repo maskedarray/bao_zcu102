@@ -59,8 +59,9 @@ void memguard_timer_intr(){
         pmcr = MEMGUARD_BUDGET_CUA;
     } else
         pmcr = MEMGUARD_BUDGET_NCUA;
+    #if !defined(PERIOD_VARIATION) && !defined(PERIOD_VARIATION_NO_PERIOD)
     asm volatile("MSR PMEVCNTR0_EL0, %0" :: "r"(pmcr));
-
+    #endif
 }
 
 inline void interrupts_init()

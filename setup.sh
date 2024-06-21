@@ -30,6 +30,13 @@ if [ -z "$EXTRA_FLAGS2" ]; then
     EXTRA_FLAGS2=$DEFAULT_EXTRA_FLAGS2
 fi
 
+DEFAULT_HYP_FLAGS=""
+
+# Check if EXTRA_FLAGS is provided externally, otherwise use the default value
+if [ -z "$HYP_FLAGS" ]; then
+    HYP_FLAGS=$DEFAULT_HYP_FLAGS
+fi
+
 cd bao-baremetal-guest
 # make1
 echo "Extra flags are $EXTRA_FLAGS1"
@@ -68,7 +75,7 @@ export CONFIG_BUILTIN=y
 cd bao-hypervisor
 # make2
 make clean
-make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 CONFIG=baremetal CONFIG_BUILTIN=y
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 CONFIG=baremetal CONFIG_BUILTIN=y EXTRA_FLAGS=$HYP_FLAGS
 cp -r ./bin/zcu102/baremetal/bao.elf ./../
 
 cd ..

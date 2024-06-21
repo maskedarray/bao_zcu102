@@ -29,6 +29,7 @@ DEBUG:=y
 OPTIMIZATIONS:=2
 CONFIG=
 PLATFORM=
+EXTRA_FLAGS?=
 
 # List existing submakes
 submakes:=config
@@ -164,7 +165,7 @@ build_macros+=-DMEM_PROT_MPU
 endif
 
 override CPPFLAGS+=$(addprefix -I, $(inc_dirs)) $(arch-cppflags) \
-	$(platform-cppflags) $(build_macros)
+	$(platform-cppflags) $(build_macros) $(EXTRA_FLAGS)
 vpath:.=CPPFLAGS
 
 ifeq ($(DEBUG), y)

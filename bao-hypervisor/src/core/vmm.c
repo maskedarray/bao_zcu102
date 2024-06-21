@@ -141,7 +141,9 @@ void vmm_init()
         struct vm_config *vm_config = &config.vmlist[vm_id];
         struct vm *vm = vm_init(vm_alloc, vm_config, master, vm_id);
             pmu_v1_init();
+            #ifndef PERIOD_VARIATION_NO_PERIOD
             pmu_v1_run();
+            #endif
         cpu_sync_barrier(&vm->sync);
         vcpu_run(cpu()->vcpu);
     } else {

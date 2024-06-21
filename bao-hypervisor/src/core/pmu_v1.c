@@ -92,7 +92,11 @@ void pmu_v1_init(){
     value =  (1ULL);  // Set bit 31 for PMCCNTR overflow interrupt
     asm volatile("MSR PMINTENSET_EL1, %0" :: "r"(value));
 
-
+    #if defined(PERIOD_VARIATION_NO_PERIOD)
+    // This is added to enable the cache miss counter even when pmu_run function is not called.
+     value = 1;  // Set bit 0 to enable PMCCNTR enabling counter 0
+    asm volatile("MSR PMCNTENSET_EL0, %0" :: "r"(value));
+    #endif
     // volatile uint32_t comp_array[100] = {0};
     // for (uint32_t i=0; i<100; i++) {
     //     comp_array[i] = comp_array[i] + i;
