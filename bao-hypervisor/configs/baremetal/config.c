@@ -9,7 +9,7 @@ struct config config = {
     
     CONFIG_HEADER
     
-    .vmlist_size = 4,
+    .vmlist_size = 3,
     .vmlist = {
         { 
             .image = {
@@ -20,7 +20,7 @@ struct config config = {
 
             .entry = 0x20000000,
             .cpu_affinity = 0x1,
-            .colors = 0x03,
+            .colors = 0x11,
 
             .platform = {
                 .cpu_num = 1,
@@ -69,7 +69,7 @@ struct config config = {
 
             .entry = 0x30000000,
             .cpu_affinity = 0x2,
-            .colors = 0x0C,
+            .colors = 0x11,
             .platform = {
                 .cpu_num = 1,
                 
@@ -108,7 +108,7 @@ struct config config = {
 
             .entry = 0x35000000,
             .cpu_affinity = 0x4,
-            .colors = 0x30,
+            .colors = 0x11,
             .platform = {
                 .cpu_num = 1,
                 
@@ -139,7 +139,7 @@ struct config config = {
 
             .entry = 0x3A000000,
             .cpu_affinity = 0x8,
-            .colors = 0xC0,
+            .colors = 0x11,
             .platform = {
                 .cpu_num = 1,
                 

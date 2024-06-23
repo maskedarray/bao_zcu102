@@ -31,7 +31,7 @@
 spinlock_t print_lock = SPINLOCK_INITVAL;
 
 
-#define POINTER_CHASING
+// #define POINTER_CHASING
 
 void uart_rx_handler(){
     printf("cpu%d: %s\n",get_cpuid(), __func__);
@@ -93,18 +93,20 @@ void main(void){
         // printf("cpu %d up\n", get_cpuid());
         // spin_unlock(&print_lock);
         while(1){
-            uint64_t data_array[262144];
-            uint64_t data_array_end = (uint64_t)&data_array[262144-1];
+            uint64_t data_array[1048576];
+            uint64_t data_array_end = (uint64_t)&data_array[1048576-1];
             asm volatile ("interfering_cores:");
             for (int i = 0; i < 262144; i=i+8){
                 asm volatile ("non_interfering_core_prime:\n"
                         "mov x2, #0\n"
+                        "mov x4, #0x3FFC0\n"
                     "repeat_loop_prime:\n"
                         "mov x0, %[array]\n"            // Load the base address of the array into register x0
                         "mov x1, %[array_end]\n"        // Load the end address of the array into register x1
                     "loop_start_prime:\n"
                         #ifdef NCUA_RD
                         "ldr x3, [x0], #64\n"            // Load and increment by 64 bytes
+                        "add x0, x0, x4\n"     // Increment by the remaining 262,080 bytes
                         #endif
                         #ifdef NCUA_WR
                         "str x2, [x0], #64\n"
@@ -112,10 +114,10 @@ void main(void){
                         "cmp x0, x1\n"                  // Compare the current address with the end address
                         "b.lt loop_start_prime\n"             // Branch back to the start of the loop if less than
                         "add x2, x2, #1\n"
-                        "cmp x2, #1\n"               // cmp x2, #<number_of_reps>
+                        "cmp x2, #1000\n"               // cmp x2, #<number_of_reps>
                         "b.lt repeat_loop_prime\n"
                         : : [array] "r" (data_array), [array_end] "r" (data_array_end)
-                        : "cc", "x0", "x1", "x2", "x3" 
+                        : "cc", "x0", "x1", "x2", "x3", "x4"
                 );
                 // asm volatile (""
                 //     #ifdef NCUA_RD
@@ -160,7 +162,7 @@ void main(void){
     #endif
     printf("The timer frequency is: %d\n", TIMER_FREQ);
     #ifdef ARRAY_SIZE
-    int a_len = 30;     //eval_array[30] = 524288 = 65536 cache lines = 4194304 bytes
+    int a_len = 31;     //eval_array[30] = 524288 = 65536 cache lines = 4194304 bytes
     #else
     for(int a_len = 1; a_len < 32; a_len++) { 
     #endif
@@ -170,11 +172,12 @@ void main(void){
         #else
         uint64_t data_array_end = (uint64_t)&data_array[eval_array[a_len]-1];
         #endif
-
+        printf("eval array len: %d\n", eval_array[a_len]);
 
         #ifdef CUA_RD
         asm volatile ("non_interfering_core_prime:\n"
                         "mov x2, #0\n"
+                        "mov x4, #0x3FFC0\n"
                     "repeat_loop_prime:\n"
                         "mov x0, %[array]\n"            // Load the base address of the array into register x0
                         "mov x1, %[array_end]\n"        // Load the end address of the array into register x1
@@ -188,6 +191,7 @@ void main(void){
                         "add x0, x0, #1\n"
                         #else
                         "ldr x3, [x0], #64\n"
+                        "add x0, x0, x4\n"     // Increment by the remaining 262,080 bytes
                         #endif
                         "cmp x0, x1\n"                  // Compare the current address with the end address
                         "b.lt loop_start_prime\n"             // Branch back to the start of the loop if less than
@@ -195,7 +199,7 @@ void main(void){
                         "cmp x2, #1\n"               // cmp x2, #<number_of_reps>
                         "b.lt repeat_loop_prime\n"
                         : : [array] "r" (data_array), [array_end] "r" (data_array_end)
-                        : "cc", "x0", "x1", "x2", "x3" 
+                        : "cc", "x0", "x1", "x2", "x3", "x4"
         );
         #endif
         #ifdef CUA_WR
@@ -216,14 +220,15 @@ void main(void){
         );
         #endif
 
-        // asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(miss_count));
-        // printf("Cache miss counter %llu\r\n", miss_count);
+        asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(miss_count));
+        printf("Cache miss counter %llu\r\n", miss_count);
         int64_t start = timer_get();
   
         // for(int repeat=0; repeat <2; ++repeat){
             #ifdef CUA_RD
             asm volatile ("non_interfering_core:\n"
                             "mov x2, #0\n"
+                            "mov x4, #0x3FFC0\n"
                         "repeat_loop:\n"
                             "mov x0, %[array]\n"            // Load the base address of the array into register x0
                             "mov x1, %[array_end]\n"        // Load the end address of the array into register x1
@@ -237,14 +242,15 @@ void main(void){
                             "add x0, x0, #1\n"
                             #else
                             "ldr x3, [x0], #64\n"
+                            "add x0, x0, x4\n"     // Increment by the remaining 262,080 bytes
                             #endif
                             "cmp x0, x1\n"                  // Compare the current address with the end address
                             "b.lt loop_start\n"             // Branch back to the start of the loop if less than
                             "add x2, x2, #1\n"
-                            "cmp x2, #100\n"               // cmp x2, #<number_of_reps>
+                            "cmp x2, #1000\n"               // cmp x2, #<number_of_reps>
                             "b.lt repeat_loop\n"
                             : : [array] "r" (data_array), [array_end] "r" (data_array_end)
-                            : "cc", "x0", "x1", "x2", "x3" 
+                            : "cc", "x0", "x1", "x2", "x3", "x4"
             );
             #endif
             #ifdef CUA_WR
@@ -267,6 +273,10 @@ void main(void){
         // }
         
         int64_t end = timer_get();
+        asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(miss_count));
+        printf("Cache miss counter %llu\r\n", miss_count);
+        asm volatile("MRS %0, PMCCNTR_EL0" : "=r"(miss_count));
+        printf("Cycle miss counter %llu\r\n", miss_count);
         // *12: core clock is 1200mhz and counter clock is 100mhz
         // /8: eval_array[a_len] is skipped by 8 indices in assembly loop to make jump of 64 byte equal to cache line
         // divide result by Num_Reps to offset number of repetations
@@ -277,10 +287,9 @@ void main(void){
         printf("Time spent for size: %0.0f , per read/wr @100mhz is: %0.2f\n", (int)(eval_array[a_len]*8.0)/1024.0, ((float)((end-start)*8)/((float)(100*eval_array[a_len]))));
         // printf("Time spent per iteration for size: %0.1f , is: %ld\n",(eval_array[a_len]*8.0)/1024.0), (float)((end-start)/10.0);
         // This is the total execution time instead of the time per instruction.
-        printf("Time taken %llu\r\n", ((float)(end-start)));
+        printf("Time taken %llu\r\n", (end-start));
         
-        asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(miss_count));
-        printf("Cache miss counter %llu\r\n", miss_count);
+        
         spin_unlock(&print_lock);
     #ifndef ARRAY_SIZE
     }
