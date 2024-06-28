@@ -52,6 +52,6 @@ SECTIONS {
 
     . = ALIGN(16);
     PROVIDE(_stack_base = .);
-    . = . + 16M; /* 2M of total stack size */
+    . = . + 32M; /* 2M of total stack size */
     PROVIDE(_heap_base = .);
 }

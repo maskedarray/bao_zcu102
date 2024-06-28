@@ -50,15 +50,15 @@ void timer_handler(){
 }
 
 
-int eval_array[40] = {512, 1024, 2048, 4096, 5120, 6144, 7168, 8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, 16384, 20480, 24576, 28672, 32768, 36864, 40960, 45056, 49152, 53248, 57344, 61440, 65536, 131072, 262144, 524288, 1048576};
+int eval_array[40] = {512, 1024, 2048, 4096, 5120, 6144, 7168, 8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, 16384, 20480, 24576, 28672, 32768, 36864, 40960, 45056, 49152, 53248, 57344, 61440, 65536, 131072, 262144, 524288, 1048576, 2097152};
 
-void shuffle(uint64_t *array, size_t n) {
+void shuffle(uint64_t *array, size_t n, size_t jump) {
     // Create an array of indices that will represent the 8th element positions.
-    int num_elems = n / 8;
+    int num_elems = n / jump;
     int *indices = malloc(num_elems * sizeof(int));
     
     for (int i = 0; i < num_elems; ++i) {
-        indices[i] = i * 8;
+        indices[i] = i * jump;
     }
     
     // Shuffle the indices using Fisher-Yates shuffle algorithm.
@@ -93,8 +93,8 @@ void main(void){
         // printf("cpu %d up\n", get_cpuid());
         // spin_unlock(&print_lock);
         while(1){
-            uint64_t data_array[1048576];
-            uint64_t data_array_end = (uint64_t)&data_array[1048576-1];
+            uint64_t data_array[2097152];
+            uint64_t data_array_end = (uint64_t)&data_array[2097152-1];
             asm volatile ("interfering_cores:");
             for (int i = 0; i < 262144; i=i+8){
                 asm volatile ("non_interfering_core_prime:\n"
@@ -153,22 +153,22 @@ void main(void){
     uint32_t miss_count =0;
     // asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(miss_count));
     // printf("Cache miss counter %llu\r\n", miss_count);
-    uint64_t data_array[1048576];
+    uint64_t data_array[2097152];
     #ifdef POINTER_CHASING
-    for(int i=0; i<1048576; i+=8){
+    for(int i=0; i<2097152; i+=32768){
         data_array[i] = (uint64_t)&data_array[i];
     }
-    shuffle(data_array, 1048576);
+    shuffle(data_array, 2097152, 32768);
     #endif
     printf("The timer frequency is: %d\n", TIMER_FREQ);
     #ifdef ARRAY_SIZE
-    int a_len = 31;     //eval_array[30] = 524288 = 65536 cache lines = 4194304 bytes
+    int a_len = 32;     //eval_array[30] = 524288 = 65536 cache lines = 4194304 bytes
     #else
     for(int a_len = 1; a_len < 32; a_len++) { 
     #endif
         
         #ifdef POINTER_CHASING
-        uint64_t data_array_end = 524288/8;     // will cause this number o 65536 misses.
+        uint64_t data_array_end = 2097152/262144;     // will cause this number o 65536 misses.
         #else
         uint64_t data_array_end = (uint64_t)&data_array[eval_array[a_len]-1];
         #endif
@@ -275,8 +275,7 @@ void main(void){
         int64_t end = timer_get();
         asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(miss_count));
         printf("Cache miss counter %llu\r\n", miss_count);
-        asm volatile("MRS %0, PMCCNTR_EL0" : "=r"(miss_count));
-        printf("Cycle miss counter %llu\r\n", miss_count);
+
         // *12: core clock is 1200mhz and counter clock is 100mhz
         // /8: eval_array[a_len] is skipped by 8 indices in assembly loop to make jump of 64 byte equal to cache line
         // divide result by Num_Reps to offset number of repetations
