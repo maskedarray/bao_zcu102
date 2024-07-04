@@ -73,7 +73,8 @@ curr_el_sp0_serror:
  * EL1 with SPx
  */  
 .balign ENTRY_SIZE  
-curr_el_spx_sync:        
+curr_el_spx_sync:  
+    bl  error_handler      
     b	.
 .balign ENTRY_SIZE
 curr_el_spx_irq:       

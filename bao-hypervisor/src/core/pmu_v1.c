@@ -147,6 +147,7 @@ void pmu_v1_interrupt_handler(){
   asm volatile("MRS %0, CNTPCT_EL0" : "=r"(init_val));
   asm volatile("MRS %0, CNTP_CVAL_EL0" : "=r"(final_val));
   // printk("pmu %lu, %lu\n", init_val, final_val);
+  printk("pmu interrupt\n" );
   while(final_val > init_val){
     
     asm volatile("MRS %0, CNTPCT_EL0" : "=r"(init_val));

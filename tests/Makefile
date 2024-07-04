@@ -30,6 +30,13 @@ period-variation-no-period:
 	@echo "Period variation test with no period interrupt enabled. Will give result without memguard timer or counter interrupts"
 	@bash reset_environment.sh
 	@bash period_variation_no_period.sh
+period-variation-no-period-rd-wr:
+	@echo "Period variation test with no period interrupt enabled. Will give result without memguard timer or counter interrupts"
+	@bash reset_environment.sh
+	@EXTRA_FLAGS1="-DCUA_RD -DARRAY_SIZE" EXTRA_FLAGS2="-DNCUA_WR" bash period_variation_no_period_variation.sh
+no-memguard-core-variation-rd-wr:
+	@echo "Period variation test with no period interrupt enabled. Will give result without memguard timer or counter interrupts"
+	@bash no_memguard_core_variation_rd_wr.sh
 period-variation: 
 	@echo "Period variation test, starts from Period defined in period_variation.sh and has 20 trials"
 	@bash reset_environment.sh

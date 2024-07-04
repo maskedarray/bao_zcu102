@@ -1,4 +1,5 @@
 #include <config.h>
+#include "../../../common_defines.h"
 
 VM_IMAGE(baremetal_image1, XSTR(/home/a26rahma/work/arm-bao/bao_zcu102/output/baremetal1.bin));
 VM_IMAGE(baremetal_image2, XSTR(/home/a26rahma/work/arm-bao/bao_zcu102/output/baremetal2.bin));
@@ -9,7 +10,7 @@ struct config config = {
     
     CONFIG_HEADER
     
-    .vmlist_size = 3,
+    .vmlist_size = __NUM_VMS,
     .vmlist = {
         { 
             .image = {
@@ -20,7 +21,7 @@ struct config config = {
 
             .entry = 0x20000000,
             .cpu_affinity = 0x1,
-            .colors = 0x11,
+            .colors = 0x01,
 
             .platform = {
                 .cpu_num = 1,
@@ -33,7 +34,7 @@ struct config config = {
                     }
                 },
 
-                .dev_num = 1,
+                .dev_num = 4,
                 .devs =  (struct vm_dev_region[]) {
                     {   
                         /* UART0 */
@@ -43,6 +44,26 @@ struct config config = {
                         .interrupt_num = 1,
                         .interrupts = 
                             (irqid_t[]) {53}                         
+                    },
+                    {
+                        .pa = 0xFED30000,
+                        .va = 0xFED30000,
+                        .size = 0x1000
+                    },
+                    {
+                        .pa = 0xFEE30000,
+                        .va = 0xFEE30000,
+                        .size = 0x1000
+                    },
+                    {
+                        .pa = 0xFEF30000,
+                        .va = 0xFEF30000,
+                        .size = 0x1000
+                    },
+                    {
+                        .pa = 0x40000000,
+                        .va = 0x40000000,
+                        .size = 0x1000
                     },
                     {   
                         /* Arch timer interrupt */
@@ -69,7 +90,7 @@ struct config config = {
 
             .entry = 0x30000000,
             .cpu_affinity = 0x2,
-            .colors = 0x11,
+            .colors = 0x01,
             .platform = {
                 .cpu_num = 1,
                 
@@ -88,7 +109,12 @@ struct config config = {
                         .pa = 0xFF010000,
                         .va = 0xFF010000,
                         .size = 0x1000                       
-                    }
+                    },
+                    {
+                        .pa = 0x40000000,
+                        .va = 0x40000000,
+                        .size = 0x1000
+                    },
                 },
 
                 .arch = {
@@ -108,7 +134,7 @@ struct config config = {
 
             .entry = 0x35000000,
             .cpu_affinity = 0x4,
-            .colors = 0x11,
+            .colors = 0x01,
             .platform = {
                 .cpu_num = 1,
                 
@@ -119,6 +145,14 @@ struct config config = {
                         .size = 0x4000000
                     }
                 },
+                // .dev_num = 1,
+                // .devs =  (struct vm_dev_region[]) {
+                //     {
+                //         .pa = 0x40000000,
+                //         .va = 0x40000000,
+                //         .size = 0x1000
+                //     },
+                // },
 
                 
 
@@ -139,7 +173,7 @@ struct config config = {
 
             .entry = 0x3A000000,
             .cpu_affinity = 0x8,
-            .colors = 0x11,
+            .colors = 0x01,
             .platform = {
                 .cpu_num = 1,
                 
@@ -151,7 +185,14 @@ struct config config = {
                     }
                 },
 
-                
+                // .dev_num = 1,
+                // .devs =  (struct vm_dev_region[]) {
+                //     {
+                //         .pa = 0x40000000,
+                //         .va = 0x40000000,
+                //         .size = 0x1000
+                //     },
+                // },
 
                 .arch = {
                     .gic = {

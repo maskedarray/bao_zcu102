@@ -37,6 +37,7 @@ if [ -z "$HYP_FLAGS" ]; then
     HYP_FLAGS=$DEFAULT_HYP_FLAGS
 fi
 
+rm -rf output/*
 cd bao-baremetal-guest
 # make1
 echo "Extra flags are $EXTRA_FLAGS1"
@@ -62,10 +63,6 @@ cp build/zcu102/baremetal4.elf ./../output/
 cp build/zcu102/baremetal4.asm ./../output/
 
 cd ..
-rm bao.img
-cd zcu102-zynqmp
-rm bao.img
-cd ..
 export CONFIG=baremetal
 export CONFIG_BUILTIN=y
 
@@ -76,20 +73,20 @@ cd bao-hypervisor
 # make2
 make clean
 make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 CONFIG=baremetal CONFIG_BUILTIN=y EXTRA_FLAGS=$HYP_FLAGS
-cp -r ./bin/zcu102/baremetal/bao.elf ./../
+cp -r ./bin/zcu102/baremetal/bao.elf ./../output/
 
 cd ..
 
 mkimage -n bao_uboot -A arm64 -O linux -C none -T kernel -a 0x200000\
-    -e 0x200000 -d ./bao-hypervisor/bin/zcu102/baremetal/bao.bin ./bao.img
+    -e 0x200000 -d ./bao-hypervisor/bin/zcu102/baremetal/bao.bin ./output/bao.img
 
 if [ $? -ne 0 ]; then
     # If mkimage failed, remove the output file
-    echo "mkimage encountered an error. Deleting bao.img."
-    rm -f ./bao.img
+    echo "mkimage encountered an ERROR! Deleting bao.img."
+    rm -f ./output/bao.img
 else
     echo "mkimage completed successfully. bao.img created."
 fi
-cp -r ./bao.img ./zcu102-zynqmp/
+
 echo "fatload mmc 0 0x200000 bao.img; bootm start 0x200000; bootm loados; bootm go"
 

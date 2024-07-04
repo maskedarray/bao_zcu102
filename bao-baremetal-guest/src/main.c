@@ -25,6 +25,7 @@
 #include <uart.h>
 #include <timer.h>
 #include <arch/timer.h>
+#include "../../common_defines.h"
 
 #define TIMER_INTERVAL (TIME_S(1))
 
@@ -47,6 +48,28 @@ void timer_handler(){
     printf("cpu%d: %s\n", get_cpuid(), __func__);
     timer_set(TIMER_INTERVAL);
     irq_send_ipi(1ull << (get_cpuid() + 1));
+}
+
+uint32_t get_core_id() {
+    switch (MEM_BASE) {
+        case 0x30000000:
+            return 1;
+        case 0x35000000:
+            return 2;
+        case 0x3A000000:
+            return 3;
+        default:
+            return 0; // Default or error case
+    }
+}
+
+uint32_t read_and_print_pmu_counter(int num_core){
+    uintptr_t base_address = 0xFEC30000;
+    uintptr_t offset = 0x00100000;
+    volatile uint32_t *address = (uint32_t *)(base_address + (num_core * offset));
+    uint32_t value = *address;
+    // printf("PMU counter 0 (L2 refill) of core %d: %d\n", num_core, value);
+    return value;
 }
 
 
@@ -89,12 +112,15 @@ void main(void){
         #ifdef NONCUA_PRINT
             printf("This is non cua core\n");
         #endif
+        // uint32_t core_id = get_core_id();
+        // volatile uint32_t *address = (uint32_t *)(0x40000000+(core_id*4));
+        // *address = core_id;
         // spin_lock(&print_lock);
         // printf("cpu %d up\n", get_cpuid());
         // spin_unlock(&print_lock);
         while(1){
-            uint64_t data_array[2097152];
-            uint64_t data_array_end = (uint64_t)&data_array[2097152-1];
+            uint64_t data_array[1048576];
+            uint64_t data_array_end = (uint64_t)&data_array[1048576-1];
             asm volatile ("interfering_cores:");
             for (int i = 0; i < 262144; i=i+8){
                 asm volatile ("non_interfering_core_prime:\n"
@@ -110,6 +136,7 @@ void main(void){
                         #endif
                         #ifdef NCUA_WR
                         "str x2, [x0], #64\n"
+                        "add x0, x0, x4\n"     // Increment by the remaining 262,080 bytes
                         #endif
                         "cmp x0, x1\n"                  // Compare the current address with the end address
                         "b.lt loop_start_prime\n"             // Branch back to the start of the loop if less than
@@ -150,10 +177,11 @@ void main(void){
     printf("cpu %d up\n", get_cpuid());
     spin_unlock(&print_lock);
     
-    uint32_t miss_count =0;
-    // asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(miss_count));
-    // printf("Cache miss counter %llu\r\n", miss_count);
-    uint64_t data_array[2097152];
+    uint64_t miss_count_start[4];
+    uint64_t miss_count_end[4];
+    // asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(miss_count_start[0]));
+    // printf("Cache miss counter %llu\r\n", miss_count_start[0]);
+    uint64_t data_array[1048576];
     #ifdef POINTER_CHASING
     for(int i=0; i<2097152; i+=32768){
         data_array[i] = (uint64_t)&data_array[i];
@@ -162,7 +190,7 @@ void main(void){
     #endif
     printf("The timer frequency is: %d\n", TIMER_FREQ);
     #ifdef ARRAY_SIZE
-    int a_len = 32;     //eval_array[30] = 524288 = 65536 cache lines = 4194304 bytes
+    int a_len = 31;     //eval_array[30] = 524288 = 65536 cache lines = 4194304 bytes
     #else
     for(int a_len = 1; a_len < 32; a_len++) { 
     #endif
@@ -220,8 +248,10 @@ void main(void){
         );
         #endif
 
-        asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(miss_count));
-        printf("Cache miss counter %llu\r\n", miss_count);
+        asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(miss_count_start[0]));
+        printf("Cache miss counter %llu\r\n", miss_count_start[0]);
+        for (uint32_t core_id = 1; core_id <= __NUM_VMS-1; core_id++) 
+            miss_count_start[core_id] = read_and_print_pmu_counter(core_id);
         int64_t start = timer_get();
   
         // for(int repeat=0; repeat <2; ++repeat){
@@ -271,10 +301,26 @@ void main(void){
             );
             #endif
         // }
-        
         int64_t end = timer_get();
-        asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(miss_count));
-        printf("Cache miss counter %llu\r\n", miss_count);
+        asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(miss_count_end[0]));
+        printf("Cache miss counter %llu\r\n", miss_count_end[0]);
+        
+        // miss_count_end[1] = read_and_print_pmu_counter(1);
+        // miss_count_end[2] = read_and_print_pmu_counter(2);
+        // miss_count_end[3] = read_and_print_pmu_counter(3);
+        int total_diff = 0;
+        for (uint32_t core_id = 0; core_id <= __NUM_VMS-1; core_id++) {
+            if(core_id != 0)
+                miss_count_end[core_id] = read_and_print_pmu_counter(core_id);
+            // volatile uint32_t *address = (uint32_t *)(0x40000000 + (core_id*4));
+            // uint32_t value = *address;
+            // printf("Core %d: %u\n", core_id, value);
+            int diff =  miss_count_end[core_id] - miss_count_start[core_id];
+            total_diff += diff;
+            printf("Counter value for core %d: %d\n", core_id, diff);
+        }
+        printf("\nTotal Counter Difference Value: %d\n", total_diff);
+        
 
         // *12: core clock is 1200mhz and counter clock is 100mhz
         // /8: eval_array[a_len] is skipped by 8 indices in assembly loop to make jump of 64 byte equal to cache line
@@ -286,6 +332,7 @@ void main(void){
         printf("Time spent for size: %0.0f , per read/wr @100mhz is: %0.2f\n", (int)(eval_array[a_len]*8.0)/1024.0, ((float)((end-start)*8)/((float)(100*eval_array[a_len]))));
         // printf("Time spent per iteration for size: %0.1f , is: %ld\n",(eval_array[a_len]*8.0)/1024.0), (float)((end-start)/10.0);
         // This is the total execution time instead of the time per instruction.
+
         printf("Time taken %llu\r\n", (end-start));
         
         

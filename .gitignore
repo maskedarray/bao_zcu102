@@ -6,7 +6,7 @@ bao-hypervisor/.vscode/
 opensbi/build/
 opensbi/.git/
 bitstream/
-
+.history/
 linux_image/
 .vscode/
 *.bin
