@@ -25,7 +25,11 @@ struct platform platform = {
             * changed to 0x80000, and the size shrunk accorindgly.
             */
             .base = 0x00000000,
+            #ifdef STATIC_FAT_IMG
+            .size = 0x70000000 - 0x16000
+            #else
             .size = 0x80000000 - 0x16000
+            #endif
         },
         {
             .base = 0x800000000,

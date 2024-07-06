@@ -1,0 +1,2 @@
+/home/a26rahma/work/alsaqr/sdvb/cortexsuite/vision/benchmarks/multi_ncut/data/test
+/home/a26rahma/work/alsaqr/sdvb/cortexsuite/vision/benchmarks/multi_ncut/result

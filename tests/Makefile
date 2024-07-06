@@ -34,5 +34,18 @@ period-variation:
 	@echo "Period variation test, starts from Period defined in period_variation.sh and has 20 trials"
 	@bash reset_environment.sh
 	@bash period_variation.sh
+
+freertos-over-bao:
+	@echo "Running Freertos over bao. Without memguard timer or period interrupt"
+	@bash reset_environment.sh
+	@bash freertos-over-bao.sh
+
+freertos-over-bao-static:
+	@echo "Upload image using make upload-fat-image before executing this target"
+	@echo "Running Freertos over bao. Without memguard timer or period interrupt"
+	@bash reset_environment.sh
+	@EXTRA_FLAGS1="-DCUA_RD -DSTATIC_FAT_IMG" EXTRA_FLAGS2="-DNCUA_RD" HYP_FLAGS="-DPERIOD_VARIATION_NO_PERIOD -DSTATIC_FAT_IMG" bash freertos-over-bao.sh
+
+
 #cat output.txt | grep -E "Time taken" | cut -d" " -f3
 #cat output.txt | grep -E "Cache miss" | cut -d" " -f4

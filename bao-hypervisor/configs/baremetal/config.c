@@ -9,7 +9,7 @@ struct config config = {
     
     CONFIG_HEADER
     
-    .vmlist_size = 4,
+    .vmlist_size = 1,
     .vmlist = {
         { 
             .image = {
@@ -32,8 +32,11 @@ struct config config = {
                         .size = 0x4000000
                     }
                 },
-
-                .dev_num = 1,
+                #ifdef STATIC_FAT_IMG
+                .dev_num = 3,
+                #else
+                .dev_num = 2,
+                #endif
                 .devs =  (struct vm_dev_region[]) {
                     {   
                         /* UART0 */
@@ -44,6 +47,13 @@ struct config config = {
                         .interrupts = 
                             (irqid_t[]) {53}                         
                     },
+                    #ifdef STATIC_FAT_IMG
+                    {   
+                        .pa = 0x70000000,
+                        .va = 0x70000000,
+                        .size = 0x3200000                      
+                    },
+                    #endif
                     {   
                         /* Arch timer interrupt */
                         .interrupt_num = 1,
