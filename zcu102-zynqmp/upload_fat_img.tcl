@@ -9,6 +9,6 @@ con
 after 2000
 targets -set -nocase -filter {name =~ "*A53 #0*"}
 # keep image download commented out once it has been downloaded
-# dow -data my_fat_image.img 0x70000000  
-dow -data bao.img 0x200000
+dow -data my_fat_image.img 0x70000000  
+
 after 100

@@ -15,25 +15,27 @@ killall cat;
 rm output.txt
 (timeout 2000000 stdbuf -oL cat /dev/ttyUSB2 >> output.txt &)
 sed -i "s/^#define MEMGUARD_PERIOD .*/#define MEMGUARD_PERIOD 2000/" ./bao-hypervisor/src/core/inc/pmu_v1.h;
-BUDGET=4294967255
+# max 32 bit unsigned: 4294967295
+BUDGET=4294967195
 MAX=4294967295
-MAX_BW=1950
+MAX_BW=665
 BUDGET_CUA=0
 BUDGET_NCUA=0
 BUDGET_CUA_T=0
 
 # Set a default value if EXTRA_FLAGS2 is not provided
-EXTRA_FLAGS1=${EXTRA_FLAGS1:-"-DCUA_RD -DARRAY_SIZE"}
+EXTRA_FLAGS1=${EXTRA_FLAGS1:-"-DCUA_RD"}
 
 # Now you can use EXTRA_FLAGS2 in your script as needed
 echo "For CUA: $EXTRA_FLAGS1"
 # Set a default value if EXTRA_FLAGS2 is not provided
-EXTRA_FLAGS2=${EXTRA_FLAGS2:-"-DNCUA_RD"}
+EXTRA_FLAGS2=${EXTRA_FLAGS2:-"-DNCUA_WR"}
 
 # Now you can use EXTRA_FLAGS2 in your script as needed
 echo "For NCUA: $EXTRA_FLAGS2"
+echo "For HYP: $HYP_FLAGS"
 sed -i "s/^#define MEMGUARD_PERIOD .*/#define MEMGUARD_PERIOD 1400/" ./bao-hypervisor/src/core/inc/pmu_v1.h;
-for ((trial=0; trial<40; trial++)); do
+for ((trial=0; trial<10; trial++)); do
   # EXTRA_FLAGS1="-DCUA_RD -DARRAY_SIZE"
   # EXTRA_FLAGS2="-DNCUA_RD"
   ((BUDGET_CUA = BUDGET))
@@ -54,7 +56,7 @@ for ((trial=0; trial<40; trial++)); do
 
   rm -rf output
   mkdir output
-  source setup.sh > /dev/null
+  source setup_freertos.sh > /dev/null
   cd zcu102-zynqmp/ || exit 1
 
   xsct semi_boot_script.tcl
@@ -62,13 +64,10 @@ for ((trial=0; trial<40; trial++)); do
 
   sleep 1
   echo ";bootm start 0x200000; bootm loados; bootm go" > /dev/ttyUSB2
-  sleep 20
+  sleep 15
 
-  if ((trial > 4)); then
-    ((BUDGET -= 40))
-  else
-    ((BUDGET -= 20))
-  fi
+  ((BUDGET -= 50))
+  
 done
 
 cd tests

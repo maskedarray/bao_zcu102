@@ -1,1 +1,0 @@
-../fvp-a/sources.mk

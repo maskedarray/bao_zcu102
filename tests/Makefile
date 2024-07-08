@@ -46,6 +46,23 @@ freertos-over-bao-static:
 	@bash reset_environment.sh
 	@EXTRA_FLAGS1="-DCUA_RD -DSTATIC_FAT_IMG" EXTRA_FLAGS2="-DNCUA_RD" HYP_FLAGS="-DPERIOD_VARIATION_NO_PERIOD -DSTATIC_FAT_IMG" bash freertos-over-bao.sh
 
+budget-variation-freertos-wr:
+	@echo "Benchmark with WR Running with 4 interfering cores with all cores regulated"
+	@bash reset_environment.sh
+	@EXTRA_FLAGS1="-DCUA_RD" EXTRA_FLAGS2="-DNCUA_WR" HYP_FLAGS="" bash budget_variation_freertos.sh
+
+budget-variation-freertos-wr-static:
+	@echo "Benchmark with WR Running with 4 interfering cores with all cores regulated"
+	@bash reset_environment.sh
+	@EXTRA_FLAGS1="-DCUA_RD -DSTATIC_FAT_IMG" EXTRA_FLAGS2="-DNCUA_WR" HYP_FLAGS="-DSTATIC_FAT_IMG" bash budget_variation_freertos.sh
+
+upload-static-img:
+	@echo "Uploading FAT image to 0x70000000"
+	@bash upload_img.sh
+
+color-variation-freertos:
+	@echo "Running color varitation test. Warning: Lines numbers for config.c are hardcoded. Script depends on budget_variation_freertos.sh"
+	@bash config_color_variation.sh
 
 #cat output.txt | grep -E "Time taken" | cut -d" " -f3
 #cat output.txt | grep -E "Cache miss" | cut -d" " -f4

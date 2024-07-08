@@ -93,10 +93,10 @@ void main(void){
         // printf("cpu %d up\n", get_cpuid());
         // spin_unlock(&print_lock);
         while(1){
-            uint64_t data_array[262144];
-            uint64_t data_array_end = (uint64_t)&data_array[262144-1];
+            uint64_t data_array[1048576];
+            uint64_t data_array_end = (uint64_t)&data_array[1048576-1];
             asm volatile ("interfering_cores:");
-            for (int i = 0; i < 262144; i=i+8){
+            for (int i = 0; i < 1048576; i=i+8){
                 asm volatile ("non_interfering_core_prime:\n"
                         "mov x2, #0\n"
                     "repeat_loop_prime:\n"
@@ -112,7 +112,7 @@ void main(void){
                         "cmp x0, x1\n"                  // Compare the current address with the end address
                         "b.lt loop_start_prime\n"             // Branch back to the start of the loop if less than
                         "add x2, x2, #1\n"
-                        "cmp x2, #1\n"               // cmp x2, #<number_of_reps>
+                        "cmp x2, #1000\n"               // cmp x2, #<number_of_reps>
                         "b.lt repeat_loop_prime\n"
                         : : [array] "r" (data_array), [array_end] "r" (data_array_end)
                         : "cc", "x0", "x1", "x2", "x3" 
