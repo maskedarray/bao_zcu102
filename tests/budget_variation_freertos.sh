@@ -34,7 +34,7 @@ EXTRA_FLAGS2=${EXTRA_FLAGS2:-"-DNCUA_WR"}
 # Now you can use EXTRA_FLAGS2 in your script as needed
 echo "For NCUA: $EXTRA_FLAGS2"
 echo "For HYP: $HYP_FLAGS"
-sed -i "s/^#define MEMGUARD_PERIOD .*/#define MEMGUARD_PERIOD 1400/" ./bao-hypervisor/src/core/inc/pmu_v1.h;
+
 for ((trial=0; trial<10; trial++)); do
   # EXTRA_FLAGS1="-DCUA_RD -DARRAY_SIZE"
   # EXTRA_FLAGS2="-DNCUA_RD"

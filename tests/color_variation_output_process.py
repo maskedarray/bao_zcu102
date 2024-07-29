@@ -4,9 +4,10 @@ import re
 
 # Step into the parent directory
 os.chdir("../")
-
+counter = 10
 # Function to read and process each file
 def process_file(filename, bmark, append_mode=False):
+    global counter
     budgets_pattern = re.compile(r"Budgets")
     sdvb_pattern = re.compile(rf"sdvb_disparity")
 
@@ -56,15 +57,17 @@ def process_file(filename, bmark, append_mode=False):
             sdvb_bmark2_values.append(line.split(':')[1].strip())
         elif re.search(r'sdvb_localization', line):
             sdvb_bmark3_values.append(line.split(':')[1].strip())
-
+    
     # Write to CSV
     output_filename = f"output_processed.csv"
     with open(output_filename, 'a') as out_file:
         if not append_mode:  # Write header only once
-            out_file.write("Budgets,sdvb_bmark,sdvb_bmark2,sdvb_bmark3\n")
+            out_file.write("Colors,Budgets,sdvb_bmark,sdvb_bmark2,sdvb_bmark3\n")
             append_mode = True
         for budget, bmark1, bmark2, bmark3 in zip(budgets_values, sdvb_bmark_values, sdvb_bmark2_values, sdvb_bmark3_values):
-            out_file.write(f"{budget},{bmark1},{bmark2},{bmark3}\n")
+            counter_temp = int(counter/10)
+            out_file.write(f"{counter_temp},{budget},{bmark1},{bmark2},{bmark3}\n")
+            counter = counter+1
     
     return append_mode
 

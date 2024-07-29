@@ -9,7 +9,7 @@ EXTRA_FLAGS1="-DCUA_RD"
 EXTRA_FLAGS2="-DNCUA_WR" 
 HYP_FLAGS=""
 
-for i in {1..6}; do
+for i in {0..6}; do
 
     sed -i "${lines[0]}s/.colors = [^;]*/.colors = ${arr1[$i]},/" ../bao-hypervisor/configs/baremetal/config.c
     sed -i "${lines[1]}s/.colors = [^;]*/.colors = ${arr2[$i]},/" ../bao-hypervisor/configs/baremetal/config.c
