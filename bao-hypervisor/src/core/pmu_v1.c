@@ -1,6 +1,7 @@
 
 #include <bao.h>
 #include <pmu_v1.h>
+#include "../../../test_defines.h"
 
 #include <platform.h>
 #include <cpu.h>
@@ -13,7 +14,8 @@
 #define read_32b(addr)         (*(volatile uint32_t *)(long)(addr))
 #define write_32b(addr, val_)  (*(volatile uint32_t *)(long)(addr) = val_)
 
-
+int count_timer[4];
+int count_counter[4];
 
 
 void read_32b_regs(uint32_t num_regs, uint64_t base_addr) {
@@ -63,7 +65,10 @@ void write_64b_regs(uint32_t num_regs, uint64_t base_addr, uint64_t val[]) {
 
 
 void pmu_v1_init(){
-
+    for (int i=0; i<4; i++){
+      count_timer[i] = 0;
+      count_counter[i] = 0;
+    }
     uint64_t pmcr;
     asm volatile("MRS %0, PMCR_EL0" : "=r"(pmcr));
 
@@ -81,7 +86,6 @@ void pmu_v1_init(){
 
     //Set initial budget of counter 0
     uint32_t value;
-    // value = MEMGUARD_BUDGET;
     if(cpu()->id == 0){
       value = MEMGUARD_BUDGET_CUA;
     } else
@@ -92,11 +96,10 @@ void pmu_v1_init(){
     value =  (1ULL);  // Set bit 31 for PMCCNTR overflow interrupt
     asm volatile("MSR PMINTENSET_EL1, %0" :: "r"(value));
 
-    #if defined(PERIOD_VARIATION_NO_PERIOD)
     // This is added to enable the cache miss counter even when pmu_run function is not called.
      value = 1;  // Set bit 0 to enable PMCCNTR enabling counter 0
     asm volatile("MSR PMCNTENSET_EL0, %0" :: "r"(value));
-    #endif
+
     // volatile uint32_t comp_array[100] = {0};
     // for (uint32_t i=0; i<100; i++) {
     //     comp_array[i] = comp_array[i] + i;
@@ -136,13 +139,12 @@ void pmu_v1_interrupt_handler(){
   uint32_t value = 1;  // Clear overflow interrupt flag
 	asm volatile("MSR PMOVSCLR_EL0, %0" :: "r"(value));
   // reload counter  -----------------stop the core --------------------------
-  // value = MEMGUARD_BUDGET;
   if(cpu()->id == 0){
     value = MEMGUARD_BUDGET_CUA;
   } else
     value = MEMGUARD_BUDGET_NCUA;
   asm volatile("MSR PMEVCNTR0_EL0, %0" :: "r"(value));
-
+  count_counter[cpu()->id]++;
   uint64_t init_val, final_val;
   asm volatile("MRS %0, CNTPCT_EL0" : "=r"(init_val));
   asm volatile("MRS %0, CNTP_CVAL_EL0" : "=r"(final_val));

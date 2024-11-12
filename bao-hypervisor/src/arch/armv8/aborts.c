@@ -11,6 +11,10 @@
 #include <emul.h>
 #include <config.h>
 #include <hypercall.h>
+#include <printk.h>
+#include <pmu_v1.h>
+
+
 
 typedef void (*abort_handler_t)(unsigned long, unsigned long, unsigned long, unsigned long);
 
@@ -91,6 +95,9 @@ static inline void syscall_handler(unsigned long iss, unsigned long far,
             break;
         default:
             WARNING("Unknown system call fid 0x%x", fid);
+            for(int i=0; i<4; i++){
+                printk("Cpu %d: Memguard timer: %d, counter interrupts: %d\n", i, count_timer[i], count_counter[i]);
+            }
     }
 
     vcpu_writereg(cpu()->vcpu, 0, ret);

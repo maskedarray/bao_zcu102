@@ -12,7 +12,7 @@
 #include <printk.h>
 #include <platform.h>
 #include <vmm.h>
-#include <pmu_v1.h>
+
 
 void init(cpuid_t cpu_id, paddr_t load_addr)
 {

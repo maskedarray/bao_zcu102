@@ -16,50 +16,29 @@ alias supersetup='source setup.sh > /dev/null; cd zcu102-zynqmp/; xsct xsct_scri
 
 # alias make1='make clean;make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102'
 
-# Default value for EXTRA_FLAGS
-DEFAULT_EXTRA_FLAGS1="-DCUA_RD"
-
-# Check if EXTRA_FLAGS is provided externally, otherwise use the default value
-if [ -z "$EXTRA_FLAGS1" ]; then
-    EXTRA_FLAGS1=$DEFAULT_EXTRA_FLAGS1
-fi
-DEFAULT_EXTRA_FLAGS2="-DNCUA_RD"
-
-# Check if EXTRA_FLAGS is provided externally, otherwise use the default value
-if [ -z "$EXTRA_FLAGS2" ]; then
-    EXTRA_FLAGS2=$DEFAULT_EXTRA_FLAGS2
-fi
-
-DEFAULT_HYP_FLAGS=""
-
-# Check if EXTRA_FLAGS is provided externally, otherwise use the default value
-if [ -z "$HYP_FLAGS" ]; then
-    HYP_FLAGS=$DEFAULT_HYP_FLAGS
-fi
-
 cd freertos-over-bao
 # make1
-echo "Extra flags are $EXTRA_FLAGS1"
+
 # No need to clean everytime
 make clean
-make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 NAME=baremetal1 BMARK=disparity EXTRA_FLAGS="$EXTRA_FLAGS1"
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 NAME=baremetal1 BMARK=disparity
 cp build/zcu102/baremetal1.bin ./../output/
 cp build/zcu102/baremetal1.elf ./../output/
 cp build/zcu102/baremetal1.asm ./../output/
 
 cd ../bao-baremetal-guest
 make clean
-make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal2 EXTRA_FLAGS="$EXTRA_FLAGS2" MEM_BASE=0x30000000 NONCUA=y #NONCUA_PRINT=y
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal2 MEM_BASE=0x30000000 NONCUA=y #NONCUA_PRINT=y
 cp build/zcu102/baremetal2.bin ./../output/
 cp build/zcu102/baremetal2.elf ./../output/
 cp build/zcu102/baremetal2.asm ./../output/
 make clean
-make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal3 MEM_BASE=0x35000000 NONCUA=y EXTRA_FLAGS="$EXTRA_FLAGS2"
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal3 MEM_BASE=0x35000000 NONCUA=y
 cp build/zcu102/baremetal3.bin ./../output/
 cp build/zcu102/baremetal3.elf ./../output/
 cp build/zcu102/baremetal3.asm ./../output/
 make clean
-make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal4 MEM_BASE=0x3A000000 NONCUA=y EXTRA_FLAGS="$EXTRA_FLAGS2"
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 SINGLE_CORE=y NAME=baremetal4 MEM_BASE=0x3A000000 NONCUA=y
 cp build/zcu102/baremetal4.bin ./../output/
 cp build/zcu102/baremetal4.elf ./../output/
 cp build/zcu102/baremetal4.asm ./../output/
@@ -78,7 +57,7 @@ export CONFIG_BUILTIN=y
 cd bao-hypervisor
 # make2
 make clean
-make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 CONFIG=baremetal CONFIG_BUILTIN=y EXTRA_FLAGS="$HYP_FLAGS"
+make CROSS_COMPILE=aarch64-none-elf- PLATFORM=zcu102 CONFIG=baremetal CONFIG_BUILTIN=y
 cp -r ./bin/zcu102/baremetal/bao.elf ./../
 
 cd ..

@@ -12,6 +12,7 @@
 #include <string.h>
 #include <ipc.h>
 #include <pmu_v1.h>
+#include "../../../test_defines.h"
 
 static struct vm_assignment {
     spinlock_t lock;
@@ -140,10 +141,10 @@ void vmm_init()
         struct vm_allocation *vm_alloc = vmm_alloc_install_vm(vm_id, master);
         struct vm_config *vm_config = &config.vmlist[vm_id];
         struct vm *vm = vm_init(vm_alloc, vm_config, master, vm_id);
+        #ifndef DEF_NO_MEMGUARD_HYP
             pmu_v1_init();
-            #ifndef PERIOD_VARIATION_NO_PERIOD
             pmu_v1_run();
-            #endif
+        #endif
         cpu_sync_barrier(&vm->sync);
         vcpu_run(cpu()->vcpu);
     } else {

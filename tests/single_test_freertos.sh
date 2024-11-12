@@ -16,12 +16,12 @@ rm output.txt
 (timeout 200000 stdbuf -oL cat /dev/ttyUSB2 >> output.txt &)
 
 # Set a default value if EXTRA_FLAGS2 is not provided
-EXTRA_FLAGS1=${EXTRA_FLAGS1:-"-DCUA_RD -DARRAY_SIZE"}
+EXTRA_FLAGS1=${EXTRA_FLAGS1:-"-DCUA_RD"}
 
 # Now you can use EXTRA_FLAGS2 in your script as needed
 echo "For CUA: $EXTRA_FLAGS1"
 # Set a default value if EXTRA_FLAGS2 is not provided
-EXTRA_FLAGS2=${EXTRA_FLAGS2:-"-DNCUA_RD"}
+EXTRA_FLAGS2=${EXTRA_FLAGS2:-"-DNCUA_WR"}
 
 # Now you can use EXTRA_FLAGS2 in your script as needed
 echo "For NCUA: $EXTRA_FLAGS2"
@@ -30,7 +30,7 @@ for ((trial=0; trial<1; trial++)); do
 
   rm -rf output
   mkdir output
-  source setup.sh > /dev/null
+  source setup_freertos.sh > /dev/null
   cd zcu102-zynqmp/ || exit 1
 
   xsct semi_boot_script.tcl

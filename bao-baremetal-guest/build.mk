@@ -25,15 +25,6 @@ endif
 ifneq ($(MEM_BASE),)
 CPPFLAGS+=-DMEM_BASE=$(MEM_BASE)
 endif
-ifneq ($(NONCUA),)
-CPPFLAGS+=-DNONCUA
-endif
-ifneq ($(EXTRA_FLAGS),)
-CPPFLAGS+=$(EXTRA_FLAGS)
-endif
-ifneq ($(NONCUA_PRINT),)
-CPPFLAGS+=-DNONCUA_PRINT
-endif
 ifneq ($(MEM_SIZE),)
 CPPFLAGS+=-DMEM_SIZE=$(MEM_SIZE)
 endif

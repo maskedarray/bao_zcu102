@@ -1,4 +1,5 @@
 #include <config.h>
+#include "../../../test_defines.h"
 
 VM_IMAGE(baremetal_image1, XSTR(/home/a26rahma/work/arm-bao/bao_zcu102/output/baremetal1.bin));
 VM_IMAGE(baremetal_image2, XSTR(/home/a26rahma/work/arm-bao/bao_zcu102/output/baremetal2.bin));
@@ -9,18 +10,18 @@ struct config config = {
     
     CONFIG_HEADER
     
-    .vmlist_size = 1,
+    .vmlist_size = TOTAL_VMS,
     .vmlist = {
         { 
             .image = {
-                .base_addr = 0x20000000,
+                .base_addr = BASE_ADDR_CORE0,
                 .load_addr = VM_IMAGE_OFFSET(baremetal_image1),
                 .size = VM_IMAGE_SIZE(baremetal_image1)
             },
 
-            .entry = 0x20000000,
+            .entry = BASE_ADDR_CORE0,
             .cpu_affinity = 0x1,
-            .colors = 0x03,
+            .colors = COLORS_CORE0,
 
             .platform = {
                 .cpu_num = 1,
@@ -28,8 +29,8 @@ struct config config = {
                 .region_num = 1,
                 .regions =  (struct vm_mem_region[]) {
                     {
-                        .base = 0x20000000,
-                        .size = 0x4000000
+                        .base = BASE_ADDR_CORE0,
+                        .size = MEM_SIZE_CORE0
                     }
                 },
                 #ifdef STATIC_FAT_IMG
@@ -72,22 +73,22 @@ struct config config = {
         },
         { 
             .image = {
-                .base_addr = 0x30000000,
+                .base_addr = BASE_ADDR_CORE1,
                 .load_addr = VM_IMAGE_OFFSET(baremetal_image2),
                 .size = VM_IMAGE_SIZE(baremetal_image2)
             },
 
-            .entry = 0x30000000,
+            .entry = BASE_ADDR_CORE1,
             .cpu_affinity = 0x2,
-            .colors = 0x0C,
+            .colors = COLORS_CORE1,
             .platform = {
                 .cpu_num = 1,
                 
                 .region_num = 1,
                 .regions =  (struct vm_mem_region[]) {
                     {
-                        .base = 0x30000000,
-                        .size = 0x4000000
+                        .base = BASE_ADDR_CORE1,
+                        .size = MEM_SIZE_CORE1
                     }
                 },
 
@@ -111,22 +112,22 @@ struct config config = {
         },
         { 
             .image = {
-                .base_addr = 0x35000000,
+                .base_addr = BASE_ADDR_CORE2,
                 .load_addr = VM_IMAGE_OFFSET(baremetal_image3),
                 .size = VM_IMAGE_SIZE(baremetal_image3)
             },
 
-            .entry = 0x35000000,
+            .entry = BASE_ADDR_CORE2,
             .cpu_affinity = 0x4,
-            .colors = 0x30,
+            .colors = COLORS_CORE2,
             .platform = {
                 .cpu_num = 1,
                 
                 .region_num = 1,
                 .regions =  (struct vm_mem_region[]) {
                     {
-                        .base = 0x35000000,
-                        .size = 0x4000000
+                        .base = BASE_ADDR_CORE2,
+                        .size = MEM_SIZE_CORE2
                     }
                 },
 
@@ -142,22 +143,22 @@ struct config config = {
         },
         { 
             .image = {
-                .base_addr = 0x3A000000,
+                .base_addr = BASE_ADDR_CORE3,
                 .load_addr = VM_IMAGE_OFFSET(baremetal_image4),
                 .size = VM_IMAGE_SIZE(baremetal_image4)
             },
 
-            .entry = 0x3A000000,
+            .entry = BASE_ADDR_CORE3,
             .cpu_affinity = 0x8,
-            .colors = 0xC0,
+            .colors = COLORS_CORE3,
             .platform = {
                 .cpu_num = 1,
                 
                 .region_num = 1,
                 .regions =  (struct vm_mem_region[]) {
                     {
-                        .base = 0x3A000000,
-                        .size = 0x4000000
+                        .base = BASE_ADDR_CORE3,
+                        .size = MEM_SIZE_CORE3
                     }
                 },
 

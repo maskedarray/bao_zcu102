@@ -39,6 +39,7 @@
 #include <plat.h>
 #include <timer.h>
 #include <arch/timer.h>
+#include "../../test_defines.h"
 
 #include "disparity_top.h"
 #include "mser_top.h"

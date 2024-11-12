@@ -10,6 +10,7 @@
 #include <bitmap.h>
 #include <string.h>
 #include <pmu_v1.h>
+#include "../../../test_defines.h"
 
 BITMAP_ALLOC(hyp_interrupt_bitmap, MAX_INTERRUPTS);
 BITMAP_ALLOC(global_interrupt_bitmap, MAX_INTERRUPTS);
@@ -43,7 +44,7 @@ void memguard_timer_intr(){
     //read L1Dcache refill counter
 
     // printk("This is an interrupt: !!!!! %d\n\r", cpu()->id);
-
+    count_timer[cpu()->id]++;
     pmcr = 0x0;
     asm volatile("MSR CNTP_CTL_EL0, %0" :: "r"(pmcr));
 
@@ -59,9 +60,9 @@ void memguard_timer_intr(){
         pmcr = MEMGUARD_BUDGET_CUA;
     } else
         pmcr = MEMGUARD_BUDGET_NCUA;
-    #if !defined(PERIOD_VARIATION) && !defined(PERIOD_VARIATION_NO_PERIOD)
+
     asm volatile("MSR PMEVCNTR0_EL0, %0" :: "r"(pmcr));
-    #endif
+
 }
 
 inline void interrupts_init()
