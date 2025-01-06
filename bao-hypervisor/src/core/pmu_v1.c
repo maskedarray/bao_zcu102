@@ -9,6 +9,7 @@
 #include <fences.h>
 #include <spinlock.h>
 #include <printk.h>
+#include <arch/gic.h>
 
 
 #define read_32b(addr)         (*(volatile uint32_t *)(long)(addr))
@@ -156,6 +157,34 @@ void pmu_v1_interrupt_handler(){
     
     // printk("Hyp Interrupt occurred2 %lu, %lu\n", init_val, final_val);
     }
+
+    /////////////////////////////////////////////////////////////////
+    ////////////////// Reset the timer interrupt ////////////////////
+    /////////////////////////////////////////////////////////////////
+
+    count_timer[cpu()->id]++;
+    uint64_t pmcr;
+    pmcr = 0x0;
+    asm volatile("MSR CNTP_CTL_EL0, %0" :: "r"(pmcr));
+
+    gic_set_pend(30, 0);
+    gic_set_act(30, 0);
+
+
+    pmcr = MEMGUARD_PERIOD;
+    asm volatile("MSR CNTP_TVAL_EL0, %0" :: "r"(pmcr));
+    pmcr = 0x1;
+    asm volatile("MSR CNTP_CTL_EL0, %0" :: "r"(pmcr));
+
+    // asm volatile("MRS %0, PMEVCNTR0_EL0" : "=r"(pmcr));
+    // printk("value after array: %x\n", pmcr);
+    // pmcr = MEMGUARD_BUDGET;
+    if(cpu()->id == 0){
+        pmcr = MEMGUARD_BUDGET_CUA;
+    } else
+        pmcr = MEMGUARD_BUDGET_NCUA;
+
+    asm volatile("MSR PMEVCNTR0_EL0, %0" :: "r"(pmcr));
     
 }
 

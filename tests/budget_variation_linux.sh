@@ -7,6 +7,10 @@
 
 # cat output.txt | grep "per read" | cut -d " " -f5,10 > output2.txt
 
+if [ $# -lt 4 ]; then
+    echo "Error: Provide 4 color values."
+    return 1
+fi
 
 cd ..
 
@@ -19,7 +23,7 @@ rm output.txt
 NUM_VMS=4
 NCUA_TEST_TYPE="NCUA_WR"
 
-BUDGET=4294967195
+BUDGET=4294967265
 MAX=4294967295
 MAX_BW=665
 SCRIPT_CUA_BUDGET=0
@@ -37,19 +41,19 @@ sed -i "/#endif/i #define TOTAL_VMS $NUM_VMS" ./test_defines.h
 
 sed -i '/#endif/i #define BASE_ADDR_CORE0 0x20000000' ./test_defines.h
 sed -i '/#endif/i #define MEM_SIZE_CORE0 0x4000000' ./test_defines.h
-sed -i '/#endif/i #define COLORS_CORE0 0x03' ./test_defines.h
+sed -i "/#endif/i #define COLORS_CORE0 0x$1" ./test_defines.h
 
 sed -i '/#endif/i #define BASE_ADDR_CORE1 0x30000000' ./test_defines.h
 sed -i '/#endif/i #define MEM_SIZE_CORE1 0x4000000' ./test_defines.h
-sed -i '/#endif/i #define COLORS_CORE1 0x0C' ./test_defines.h
+sed -i "/#endif/i #define COLORS_CORE1 0x$2" ./test_defines.h
 
 sed -i '/#endif/i #define BASE_ADDR_CORE2 0x35000000' ./test_defines.h
 sed -i '/#endif/i #define MEM_SIZE_CORE2 0x4000000' ./test_defines.h
-sed -i '/#endif/i #define COLORS_CORE2 0x30' ./test_defines.h
+sed -i "/#endif/i #define COLORS_CORE2 0x$3" ./test_defines.h
 
 sed -i '/#endif/i #define BASE_ADDR_CORE3 0x3A000000' ./test_defines.h
 sed -i '/#endif/i #define MEM_SIZE_CORE3 0x4000000' ./test_defines.h
-sed -i '/#endif/i #define COLORS_CORE3 0xC0' ./test_defines.h
+sed -i "/#endif/i #define COLORS_CORE3 0x$4" ./test_defines.h
 #############################################################################################
 
 sed -i '/#endif/i #define MEMGUARD_BUDGET_CUA '"$SCRIPT_CUA_BUDGET" ./test_defines.h
@@ -83,7 +87,7 @@ for ((trial=0; trial<10; trial++)); do
 
   rm -rf output
   mkdir output
-  source setup_linux.sh > /dev/null
+  source setup_linux.sh 
   cd zcu102-zynqmp/ || exit 1
 
   xsct semi_boot_script.tcl
@@ -91,9 +95,9 @@ for ((trial=0; trial<10; trial++)); do
 
   sleep 1
   echo ";bootm start 0x200000; bootm loados; bootm go" > $SCRIPT_USB_DEVICE
-  sleep 120
+  sleep 360
 
-  ((BUDGET -= 50))
+  ((BUDGET -= 10))
   
 done
 

@@ -62,6 +62,28 @@ void memguard_timer_intr(){
         pmcr = MEMGUARD_BUDGET_NCUA;
 
     asm volatile("MSR PMEVCNTR0_EL0, %0" :: "r"(pmcr));
+    // switch(cpu()->id){
+    //     case 0:
+    //         gic_set_pend(175, 0);
+    //         gic_set_act(175, 0);
+    //         break;
+    //     case 1:
+    //         gic_set_pend(176, 0);
+    //         gic_set_act(176, 0);
+    //         break;
+    //     case 2:
+    //         gic_set_pend(177, 0);
+    //         gic_set_act(177, 0);
+    //         break;
+    //     case 3:
+    //         gic_set_pend(178, 0);
+    //         gic_set_act(178, 0);
+    //         break;
+    //     default:
+    //         break;
+    // }
+
+    
 
 }
 
